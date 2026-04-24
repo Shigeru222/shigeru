@@ -1,0 +1,87 @@
+import Anthropic from "@anthropic-ai/sdk";
+import { NextResponse } from "next/server";
+
+const client = new Anthropic();
+
+export async function POST() {
+  try {
+    const prompt = `You are an expert English language examiner specializing in the Japanese Eiken Grade 2 exam.
+Generate a complete Eiken Grade 2 mock exam with the following structure.
+
+Return ONLY valid JSON, no markdown, no explanation. The JSON must match this exact schema:
+
+{
+  "vocabQuestions": [
+    {
+      "id": 1,
+      "question": "The student showed great ( ) in completing the difficult project on time.",
+      "options": ["determination", "hesitation", "confusion", "distraction"],
+      "correctIndex": 0,
+      "explanation": "'Determination' means firm resolve to do something. The context 'completing the difficult project on time' requires a positive trait."
+    }
+    // ... 20 total vocab/grammar questions
+  ],
+  "readingPassage": {
+    "title": "Passage title in English",
+    "passage": "A 300-400 word reading passage appropriate for Eiken Grade 2 level...",
+    "questions": [
+      {
+        "id": 1,
+        "question": "According to the passage, what is the main reason...?",
+        "options": ["Option A", "Option B", "Option C", "Option D"],
+        "correctIndex": 2,
+        "explanation": "The passage states in paragraph 2 that..."
+      }
+      // ... 6 total reading questions
+    ]
+  },
+  "writingPrompt": {
+    "topic": "Should high school students be required to study abroad for one year?",
+    "instructions": "Write an essay of 80-100 words expressing your opinion on this topic. Give TWO reasons to support your opinion. Write in English.",
+    "wordLimit": 100
+  }
+}
+
+Requirements:
+- vocabQuestions: exactly 20 questions testing vocabulary and grammar at Eiken Grade 2 level
+  - Use fill-in-the-blank format: "sentence with ( ) blank"
+  - Each question has exactly 4 options
+  - Options should be plausible but clearly distinguishable
+  - Mix noun, verb, adjective, adverb, and grammar questions
+- readingPassage: one passage of 300-400 words on an interesting topic (science, society, culture, environment, technology)
+  - followed by exactly 6 comprehension questions, each with 4 options
+- writingPrompt: one essay topic with clear instructions for 80-100 words
+- All questions, options, passages, and prompts must be in English
+- Explanations should be helpful and educational
+- Difficulty must match actual Eiken Grade 2 level
+
+Generate the full exam now:`;
+
+    const message = await client.messages.create({
+      model: "claude-opus-4-7",
+      max_tokens: 8000,
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    let jsonText = "";
+    for (const block of message.content) {
+      if (block.type === "text") {
+        jsonText = block.text;
+        break;
+      }
+    }
+
+    // Strip markdown code fences if present
+    jsonText = jsonText.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/, "").trim();
+
+    const examData = JSON.parse(jsonText);
+
+    return NextResponse.json(examData);
+  } catch (error) {
+    console.error("Error generating exam:", error);
+    return NextResponse.json(
+      { error: "試験の生成に失敗しました。もう一度お試しください。" },
+      { status: 500 }
+    );
+  }
+}
