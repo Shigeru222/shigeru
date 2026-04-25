@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BookOpen, Brain, TrendingUp, Zap, Clock, Award, ChevronRight, Star } from "lucide-react";
+import { BookOpen, Brain, TrendingUp, Zap, Clock, Award, ChevronRight, Star, Mic } from "lucide-react";
 import { getExamResults } from "@/lib/storage";
 import { ExamResult } from "@/lib/types";
 
@@ -43,6 +43,13 @@ export default function HomePage() {
             >
               <Zap className="w-5 h-5" />
               模擬試験を開始する
+            </button>
+            <button
+              onClick={() => router.push("/interview")}
+              className="btn-secondary text-lg flex items-center justify-center gap-2"
+            >
+              <Mic className="w-5 h-5" />
+              面接練習をする
             </button>
             {recentResults.length > 0 && (
               <button
@@ -96,6 +103,13 @@ export default function HomePage() {
               description="間違えたパターンをAIが深く分析し、優先度付きの学習アクションを提案"
               color="cyan"
               delay="0.2s"
+            />
+            <FeatureCard
+              icon={<Mic className="w-8 h-8" />}
+              title="面接練習"
+              description="AIが面接官として本番形式で質問。音読・イラスト描写・意見表明をテキストで練習し採点"
+              color="purple"
+              delay="0.3s"
             />
           </div>
         </div>
