@@ -7,7 +7,8 @@ const client = new Anthropic();
 
 export async function POST() {
   try {
-    const prompt = `You are an expert English language examiner specializing in the Japanese Eiken Grade 2 exam.
+    const prompt = `You are an expert English language examiner specializing in the Japanese Eiken Grade 2 exam. Your goal is to generate challenging questions at the UPPER end of Eiken Grade 2 difficulty — questions that would appear in the actual exam and that many test-takers find difficult.
+
 Generate a complete Eiken Grade 2 mock exam with the following structure.
 
 Return ONLY valid JSON, no markdown, no explanation. The JSON must match this exact schema:
@@ -16,16 +17,16 @@ Return ONLY valid JSON, no markdown, no explanation. The JSON must match this ex
   "vocabQuestions": [
     {
       "id": 1,
-      "question": "The student showed great ( ) in completing the difficult project on time.",
-      "options": ["determination", "hesitation", "confusion", "distraction"],
+      "question": "The scientist's ( ) research into gene therapy has opened new possibilities for treating hereditary diseases.",
+      "options": ["groundbreaking", "superficial", "redundant", "ambiguous"],
       "correctIndex": 0,
-      "explanation": "'Determination' means firm resolve to do something. The context 'completing the difficult project on time' requires a positive trait."
+      "explanation": "'Groundbreaking' means innovative and pioneering. The context of 'opening new possibilities' requires a strongly positive adjective describing exceptional research."
     }
     // ... 20 total vocab/grammar questions
   ],
   "readingPassage": {
     "title": "Passage title in English",
-    "passage": "A 300-400 word reading passage appropriate for Eiken Grade 2 level...",
+    "passage": "A 400-500 word reading passage with complex sentence structures and academic vocabulary...",
     "questions": [
       {
         "id": 1,
@@ -38,24 +39,26 @@ Return ONLY valid JSON, no markdown, no explanation. The JSON must match this ex
     ]
   },
   "writingPrompt": {
-    "topic": "Should high school students be required to study abroad for one year?",
-    "instructions": "Write an essay of 80-100 words expressing your opinion on this topic. Give TWO reasons to support your opinion. Write in English.",
+    "topic": "Should governments impose stricter regulations on social media companies to protect users' mental health?",
+    "instructions": "Write an essay of 80-100 words expressing your opinion on this topic. Give TWO specific reasons to support your opinion. Write in English.",
     "wordLimit": 100
   }
 }
 
-Requirements:
-- vocabQuestions: exactly 20 questions testing vocabulary and grammar at Eiken Grade 2 level
-  - Use fill-in-the-blank format: "sentence with ( ) blank"
-  - Each question has exactly 4 options
-  - Options should be plausible but clearly distinguishable
-  - Mix noun, verb, adjective, adverb, and grammar questions
-- readingPassage: one passage of 300-400 words on an interesting topic (science, society, culture, environment, technology)
-  - followed by exactly 6 comprehension questions, each with 4 options
-- writingPrompt: one essay topic with clear instructions for 80-100 words
-- All questions, options, passages, and prompts must be in English
-- Explanations should be helpful and educational
-- Difficulty must match actual Eiken Grade 2 level
+Difficulty requirements — strictly enforce these:
+- vocabQuestions: exactly 20 questions at CHALLENGING Eiken Grade 2 level
+  - Use advanced vocabulary: words like "exacerbate", "alleviate", "inevitably", "predominantly", "sustainable", "incentive", "contradict", "superficial", "legitimate", "elaborate", "consensus", "simultaneously", "contemporary", "consequently", "deteriorate"
+  - Grammar questions should test: subjunctive mood, inversion, complex conditionals, participial phrases, relative clauses with whom/whose
+  - Fill-in-the-blank sentences must be LONG (20+ words) with rich academic or professional context
+  - All 4 options must look plausible — avoid obviously wrong answers
+  - Mix: 12 vocabulary + 8 grammar questions
+- readingPassage: 400-500 words (longer than standard) on a complex topic (climate policy, neuroscience, economics, global affairs, medical research)
+  - Use complex sentence structures, passive voice, academic register
+  - 6 comprehension questions that require careful reading and inference, not just scanning
+  - Include at least 2 inference questions where the answer is implied but not stated directly
+- writingPrompt: controversial, thought-provoking topic that requires nuanced argument
+- All content in English
+- Explanations must clearly explain WHY the correct answer is right AND why distractors are wrong
 
 Generate the full exam now:`;
 
