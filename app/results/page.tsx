@@ -298,11 +298,18 @@ export default function ResultsPage() {
           {analysis && <AnalysisSection analysis={analysis} />}
         </div>
 
-        {/* New Exam */}
-        <div className="mt-8 text-center">
+        {/* Navigation buttons */}
+        <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+          <button
+            onClick={() => router.push("/")}
+            className="btn-primary flex items-center justify-center gap-2"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            ホームへ戻る
+          </button>
           <button
             onClick={() => router.push("/exam")}
-            className="btn-secondary flex items-center gap-2 mx-auto"
+            className="btn-secondary flex items-center justify-center gap-2"
           >
             <Zap className="w-5 h-5" />
             もう一度受験する

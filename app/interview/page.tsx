@@ -168,6 +168,7 @@ export default function InterviewPage() {
               setEvaluation(null);
               generateInterview();
             }}
+            onHome={() => router.push("/")}
           />
         )}
       </div>
@@ -384,11 +385,13 @@ function ResultsPhase({
   questions,
   answers,
   onRetry,
+  onHome,
 }: {
   evaluation: EvaluationResult;
   questions: InterviewQuestion[];
   answers: Record<number, string>;
   onRetry: () => void;
+  onHome: () => void;
 }) {
   const percentage = Math.round((evaluation.totalScore / evaluation.maxTotalScore) * 100);
   const passed = percentage >= 60;
@@ -498,10 +501,16 @@ function ResultsPhase({
         <p className="text-slate-300 leading-relaxed text-sm">{evaluation.studyAdvice}</p>
       </div>
 
-      <button onClick={onRetry} className="btn-primary w-full flex items-center justify-center gap-2">
-        <Mic className="w-5 h-5" />
-        もう一度面接練習する
-      </button>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <button onClick={onRetry} className="btn-primary flex-1 flex items-center justify-center gap-2">
+          <Mic className="w-5 h-5" />
+          もう一度面接練習する
+        </button>
+        <button onClick={onHome} className="btn-secondary flex-1 flex items-center justify-center gap-2">
+          <ArrowLeft className="w-5 h-5" />
+          ホームへ戻る
+        </button>
+      </div>
     </div>
   );
 }
