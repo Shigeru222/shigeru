@@ -17,12 +17,37 @@ import { setCurrentResult, saveExamResult } from "@/lib/storage";
 
 type Phase = "loading" | "vocab" | "reading" | "writing" | "submitting" | "error";
 
+type SectionKey = "vocab" | "reading" | "writing";
+type SectionStatus = "pending" | "streaming" | "done" | "error";
+interface SectionProgress {
+  status: SectionStatus;
+  chars: number;
+  target: number;
+  message?: string;
+}
+type SectionsState = Record<SectionKey, SectionProgress>;
+
+const SECTION_TARGETS: Record<SectionKey, number> = {
+  vocab: 6500,
+  reading: 5500,
+  writing: 700,
+};
+
+function initialSections(): SectionsState {
+  return {
+    vocab: { status: "pending", chars: 0, target: SECTION_TARGETS.vocab },
+    reading: { status: "pending", chars: 0, target: SECTION_TARGETS.reading },
+    writing: { status: "pending", chars: 0, target: SECTION_TARGETS.writing },
+  };
+}
+
 export default function ExamPage() {
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>("loading");
   const [examData, setExamData] = useState<ExamData | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [elapsed, setElapsed] = useState(0);
+  const [sections, setSections] = useState<SectionsState>(initialSections);
 
   // Answers
   const [vocabAnswers, setVocabAnswers] = useState<Record<number, number>>({});
@@ -46,14 +71,67 @@ export default function ExamPage() {
 
   async function generateExam() {
     setPhase("loading");
+    setSections(initialSections());
+
+    const updateSection = (key: SectionKey, patch: Partial<SectionProgress>) =>
+      setSections((prev) => ({ ...prev, [key]: { ...prev[key], ...patch } }));
+
+    async function runSection<T>(key: SectionKey, path: string): Promise<T> {
+      updateSection(key, { status: "streaming", chars: 0 });
+      const res = await fetch(path, { method: "POST" });
+      if (!res.ok || !res.body) throw new Error(`${key} ${res.status}`);
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let text = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        text += decoder.decode(value, { stream: true });
+        updateSection(key, { chars: text.length });
+      }
+      const cleaned = text
+        .replace(/^```json\s*/i, "")
+        .replace(/^```\s*/i, "")
+        .replace(/\s*```$/, "")
+        .trim();
+      const parsed = JSON.parse(cleaned) as T;
+      updateSection(key, { status: "done" });
+      return parsed;
+    }
+
     try {
-      const res = await fetch("/api/generate-exam", { method: "POST" });
-      if (!res.ok) throw new Error("Failed");
-      const data: ExamData = await res.json();
-      setExamData(data);
+      const [vocab, reading, writing] = await Promise.all([
+        runSection<{ vocabQuestions: ExamData["vocabQuestions"] }>(
+          "vocab",
+          "/api/generate-exam/vocab",
+        ).catch((e) => {
+          updateSection("vocab", { status: "error", message: String(e) });
+          throw e;
+        }),
+        runSection<{ readingPassage: ExamData["readingPassage"] }>(
+          "reading",
+          "/api/generate-exam/reading",
+        ).catch((e) => {
+          updateSection("reading", { status: "error", message: String(e) });
+          throw e;
+        }),
+        runSection<{ writingPrompt: ExamData["writingPrompt"] }>(
+          "writing",
+          "/api/generate-exam/writing",
+        ).catch((e) => {
+          updateSection("writing", { status: "error", message: String(e) });
+          throw e;
+        }),
+      ]);
+
+      setExamData({
+        vocabQuestions: vocab.vocabQuestions,
+        readingPassage: reading.readingPassage,
+        writingPrompt: writing.writingPrompt,
+      });
       setPhase("vocab");
     } catch {
-      setErrorMsg("試験の生成に失敗しました。インターネット接続を確認してください。");
+      setErrorMsg("試験の生成に失敗しました。もう一度お試しください。");
       setPhase("error");
     }
   }
@@ -145,7 +223,7 @@ export default function ExamPage() {
     return `${m}:${sec.toString().padStart(2, "0")}`;
   };
 
-  if (phase === "loading") return <LoadingScreen />;
+  if (phase === "loading") return <LoadingScreen sections={sections} />;
   if (phase === "error") return <ErrorScreen message={errorMsg} onRetry={generateExam} />;
   if (phase === "submitting") return <SubmittingScreen />;
   if (!examData) return null;
@@ -452,32 +530,84 @@ function WritingSection({
   );
 }
 
-function LoadingScreen() {
-  const messages = [
-    "AIが問題を生成中...",
-    "語彙問題を作成中...",
-    "読解パッセージを準備中...",
-    "英作文テーマを考案中...",
-  ];
-  const [msgIdx, setMsgIdx] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => setMsgIdx((i) => (i + 1) % messages.length), 2000);
-    return () => clearInterval(timer);
-  }, []);
+function LoadingScreen({ sections }: { sections: SectionsState }) {
+  const labels: Record<SectionKey, { title: string; icon: typeof BookOpen }> = {
+    vocab: { title: "語彙・文法 (20問)", icon: FileText },
+    reading: { title: "読解パッセージ (6問)", icon: BookOpen },
+    writing: { title: "英作文テーマ", icon: PenLine },
+  };
+  const order: SectionKey[] = ["vocab", "reading", "writing"];
+  const allDone = order.every((k) => sections[k].status === "done");
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4">
-      <div className="text-center animate-fade-in">
-        <div className="relative w-24 h-24 mx-auto mb-8">
-          <div className="absolute inset-0 rounded-full border-4 border-blue-500/30" />
-          <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-500 animate-spin" />
-          <div className="absolute inset-2 rounded-full border-4 border-transparent border-t-purple-500 animate-spin-slow" />
-          <BookOpen className="absolute inset-0 m-auto w-8 h-8 text-white animate-float" />
+      <div className="w-full max-w-xl animate-fade-in">
+        <div className="text-center mb-8">
+          <div className="relative w-20 h-20 mx-auto mb-6">
+            <div className="absolute inset-0 rounded-full border-4 border-blue-500/30" />
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-500 animate-spin" />
+            <div className="absolute inset-2 rounded-full border-4 border-transparent border-t-purple-500 animate-spin-slow" />
+            <BookOpen className="absolute inset-0 m-auto w-7 h-7 text-white animate-float" />
+          </div>
+          <h2 className="text-2xl font-bold mb-2 gradient-text">模擬試験を生成中</h2>
+          <p className="text-sm text-slate-400">3 セクションを並列でストリーミング生成しています</p>
         </div>
-        <h2 className="text-2xl font-bold mb-3 gradient-text">模擬試験を生成中</h2>
-        <p className="text-slate-400 animate-fade-in" key={msgIdx}>{messages[msgIdx]}</p>
-        <p className="text-sm text-slate-600 mt-4">少々お待ちください（30秒〜1分程度）</p>
+
+        <div className="space-y-3">
+          {order.map((key) => {
+            const s = sections[key];
+            const { title, icon: Icon } = labels[key];
+            const pct = Math.min(100, Math.round((s.chars / s.target) * 100));
+            const widthPct = s.status === "done" ? 100 : s.status === "error" ? 100 : pct;
+            const barColor =
+              s.status === "done"
+                ? "bg-emerald-500"
+                : s.status === "error"
+                ? "bg-red-500"
+                : "bg-gradient-to-r from-blue-500 to-purple-500";
+            const statusText =
+              s.status === "pending"
+                ? "待機中"
+                : s.status === "streaming"
+                ? `生成中 ${s.chars.toLocaleString()} 文字`
+                : s.status === "done"
+                ? "完了 ✓"
+                : "失敗";
+            return (
+              <div key={key} className="glass rounded-xl p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2 text-slate-200 text-sm font-medium">
+                    <Icon className="w-4 h-4" />
+                    {title}
+                  </div>
+                  <span
+                    className={
+                      s.status === "done"
+                        ? "text-xs text-emerald-400"
+                        : s.status === "error"
+                        ? "text-xs text-red-400"
+                        : "text-xs text-slate-400 tabular-nums"
+                    }
+                  >
+                    {statusText}
+                  </span>
+                </div>
+                <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+                  <div
+                    className={`h-full ${barColor} transition-[width] duration-200`}
+                    style={{ width: `${widthPct}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {allDone && (
+          <p className="text-center text-emerald-400 text-sm mt-6 animate-fade-in">
+            全セクション完了。試験を開始します…
+          </p>
+        )}
       </div>
     </div>
   );
