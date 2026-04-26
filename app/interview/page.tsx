@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Mic,
+  MicOff,
   BookOpen,
   Image,
   MessageSquare,
@@ -17,6 +18,7 @@ import {
   TrendingUp,
   Lightbulb,
 } from "lucide-react";
+import { useSpeechRecognition } from "@/lib/useSpeechRecognition";
 
 interface InterviewQuestion {
   id: number;
@@ -282,6 +284,26 @@ function QuestionsPhase({
   const isLast = currentIndex === questions.length - 1;
   const stepNumber = currentIndex + 2;
 
+  const speech = useSpeechRecognition({ lang: "en-US" });
+
+  // 設問が変わったら録音を停止
+  useEffect(() => {
+    speech.stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex]);
+
+  const toggleMic = () => {
+    if (speech.listening) {
+      speech.stop();
+      return;
+    }
+    speech.start((finalText) => {
+      const cur = answers[q.id] || "";
+      const sep = cur && !/\s$/.test(cur) ? " " : "";
+      onAnswer(q.id, cur + sep + finalText.trim());
+    });
+  };
+
   const typeLabel = {
     passage: "パッセージについての質問",
     illustration: "イラストの描写",
@@ -337,13 +359,59 @@ function QuestionsPhase({
 
       {/* Answer input */}
       <div className="glass rounded-2xl p-5 mb-4">
-        <label className="text-sm text-slate-400 mb-2 block">あなたの回答（英語で入力）</label>
+        <div className="flex items-center justify-between mb-2 gap-2">
+          <label className="text-sm text-slate-400">あなたの回答（英語で入力 / 音声入力）</label>
+          {speech.supported ? (
+            <button
+              type="button"
+              onClick={toggleMic}
+              className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
+                speech.listening
+                  ? "bg-red-500 text-white animate-pulse"
+                  : "bg-blue-500/20 text-blue-300 hover:bg-blue-500/30"
+              }`}
+              aria-pressed={speech.listening}
+            >
+              {speech.listening ? (
+                <>
+                  <MicOff className="w-3.5 h-3.5" />
+                  停止
+                </>
+              ) : (
+                <>
+                  <Mic className="w-3.5 h-3.5" />
+                  音声入力
+                </>
+              )}
+            </button>
+          ) : (
+            <span className="text-[11px] text-slate-500">
+              ※ 音声入力は Chrome/Safari/Edge のみ対応
+            </span>
+          )}
+        </div>
         <textarea
           value={answers[q.id] || ""}
           onChange={(e) => onAnswer(q.id, e.target.value)}
-          placeholder="Enter your answer in English..."
+          placeholder="Enter your answer in English, or click 音声入力 to speak..."
           className="w-full h-32 bg-transparent text-white placeholder-slate-600 resize-none outline-none leading-relaxed text-sm"
         />
+        {speech.listening && (
+          <div className="mt-2 text-xs text-slate-300 bg-red-500/10 border border-red-400/30 rounded-md px-3 py-2 flex items-start gap-2">
+            <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse mt-1 shrink-0" />
+            <span>
+              録音中…声に出して話してください。
+              {speech.interim && (
+                <span className="block text-slate-400 italic mt-1">{speech.interim}</span>
+              )}
+            </span>
+          </div>
+        )}
+        {speech.error && (
+          <div className="mt-2 text-xs text-red-300 bg-red-500/10 border border-red-400/30 rounded-md px-3 py-2">
+            {speech.error}
+          </div>
+        )}
       </div>
 
       {/* Sample answer toggle */}
