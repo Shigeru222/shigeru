@@ -63,7 +63,7 @@ Difficulty requirements — strictly enforce these:
 Generate the full exam now:`;
 
     const message = await client.messages.create({
-      model: "claude-opus-4-7",
+      model: process.env.CLAUDE_MODEL ?? "claude-sonnet-4-6",
       max_tokens: 8000,
       messages: [{ role: "user", content: prompt }],
     });

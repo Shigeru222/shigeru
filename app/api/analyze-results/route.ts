@@ -90,7 +90,7 @@ Requirements:
 - Be specific and encouraging`;
 
     const message = await client.messages.create({
-      model: "claude-opus-4-7",
+      model: process.env.CLAUDE_MODEL ?? "claude-sonnet-4-6",
       max_tokens: 3000,
       messages: [{ role: "user", content: prompt }],
     });
