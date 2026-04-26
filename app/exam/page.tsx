@@ -28,7 +28,7 @@ interface SectionProgress {
 type SectionsState = Record<SectionKey, SectionProgress>;
 
 const SECTION_TARGETS: Record<SectionKey, number> = {
-  vocab: 6500,
+  vocab: 3500,
   reading: 5500,
   writing: 700,
 };
@@ -188,7 +188,7 @@ export default function ExamPage() {
     }
 
     const total = vocabScore + readingScore + writingEval.score;
-    const maxTotal = 20 + 6 + 16;
+    const maxTotal = 10 + 6 + 16;
 
     const result: ExamResult = {
       id: Date.now().toString(),
@@ -202,7 +202,7 @@ export default function ExamPage() {
         reading: readingScore,
         writing: writingEval.score,
         total,
-        maxVocab: 20,
+        maxVocab: 10,
         maxReading: 6,
         maxWriting: 16,
         maxTotal,
@@ -532,7 +532,7 @@ function WritingSection({
 
 function LoadingScreen({ sections }: { sections: SectionsState }) {
   const labels: Record<SectionKey, { title: string; icon: typeof BookOpen }> = {
-    vocab: { title: "語彙・文法 (20問)", icon: FileText },
+    vocab: { title: "語彙・文法 (10問)", icon: FileText },
     reading: { title: "読解パッセージ (6問)", icon: BookOpen },
     writing: { title: "英作文テーマ", icon: PenLine },
   };

@@ -126,8 +126,8 @@ export default function HomePage() {
             <div className="grid md:grid-cols-3 gap-6">
               <ExamSection
                 label="語彙・文法"
-                count="20問"
-                points="20点"
+                count="10問"
+                points="10点"
                 color="blue"
               />
               <ExamSection
