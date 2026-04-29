@@ -170,14 +170,16 @@ function QuizPage() {
 }
 
 function buildQuiz(type: QuizType, length: number): QuizQuestion[] {
-  const shuffled = shuffle(KANJI_LIST).slice(0, length);
+  const pool =
+    type === "yomi" ? KANJI_LIST.filter((k) => k.kun.length > 0) : KANJI_LIST;
+  const shuffled = shuffle(pool).slice(0, length);
   return shuffled.map((kanji) => makeQuestion(kanji, type));
 }
 
 function makeQuestion(kanji: Kanji, type: QuizType): QuizQuestion {
   if (type === "yomi") {
-    const correctReading = pickReading(kanji);
-    const distractors = pickDistractorReadings(kanji, 3);
+    const correctReading = kanji.kun[0];
+    const distractors = pickDistractorKun(kanji, 3);
     const choices = shuffle([correctReading, ...distractors]);
     return {
       type,
@@ -197,22 +199,16 @@ function makeQuestion(kanji: Kanji, type: QuizType): QuizQuestion {
   };
 }
 
-function pickReading(k: Kanji): string {
-  const all = [...k.kun, ...k.on];
-  if (all.length === 0) return k.examples[0]?.reading ?? "";
-  return all[Math.floor(Math.random() * all.length)];
-}
-
-function pickDistractorReadings(target: Kanji, n: number): string[] {
-  const targetReadings = new Set([...target.on, ...target.kun]);
+function pickDistractorKun(target: Kanji, n: number): string[] {
+  const targetReadings = new Set(target.kun);
   const pool: string[] = [];
   for (const k of shuffle(KANJI_LIST)) {
     if (k.char === target.char) continue;
-    for (const r of [...k.kun, ...k.on]) {
-      if (!targetReadings.has(r) && !pool.includes(r)) {
-        pool.push(r);
-        if (pool.length >= n) return pool;
-      }
+    if (k.kun.length === 0) continue;
+    const reading = k.kun[0];
+    if (!targetReadings.has(reading) && !pool.includes(reading)) {
+      pool.push(reading);
+      if (pool.length >= n) return pool;
     }
   }
   return pool;
