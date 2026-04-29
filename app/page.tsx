@@ -1,288 +1,138 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { BookOpen, Brain, TrendingUp, Zap, Clock, Award, ChevronRight, Star, Mic } from "lucide-react";
-import { getExamResults } from "@/lib/storage";
-import { ExamResult } from "@/lib/types";
+import { KANJI_LIST } from "@/lib/kanji-data";
+import { loadProgress, masteredCount, learningCount } from "@/lib/kanji-storage";
 
 export default function HomePage() {
-  const router = useRouter();
-  const [recentResults, setRecentResults] = useState<ExamResult[]>([]);
+  const [mastered, setMastered] = useState(0);
+  const [learning, setLearning] = useState(0);
 
   useEffect(() => {
-    setRecentResults(getExamResults().slice(0, 3));
+    const p = loadProgress();
+    setMastered(masteredCount(p));
+    setLearning(learningCount(p));
   }, []);
 
+  const total = KANJI_LIST.length;
+  const pct = Math.round((mastered / total) * 100);
+
   return (
-    <main className="min-h-screen">
-      {/* Hero */}
-      <section className="relative pt-20 pb-16 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 glass rounded-full px-4 py-2 mb-8 animate-fade-in">
-            <Star className="w-4 h-4 text-yellow-400" />
-            <span className="text-sm text-slate-300">AI搭載 英検対策アプリ</span>
+    <main className="min-h-screen px-5 py-10">
+      <div className="max-w-3xl mx-auto">
+        {/* タイトル */}
+        <header className="text-center mb-8">
+          <div className="inline-block anim-bob mb-3">
+            <span className="text-6xl md:text-7xl">📚</span>
           </div>
-
-          <h1 className="text-5xl md:text-7xl font-black mb-6 animate-fade-in-up leading-tight">
-            英検2級を
-            <br />
-            <span className="gradient-text">AIで突破</span>
+          <h1 className="text-4xl md:text-5xl font-black tracking-wide leading-tight">
+            <span className="inline-block px-3 py-1 bg-yellow-300 rounded-2xl border-[3px] border-[var(--ink)] shadow-[4px_4px_0_var(--ink)] anim-wiggle">
+              かんじ
+            </span>
+            <span className="mx-2">チャレンジ</span>
+            <span className="inline-block">!</span>
           </h1>
-
-          <p className="text-xl text-slate-400 mb-10 max-w-2xl mx-auto animate-fade-in-up leading-relaxed">
-            本番さながらの模擬試験を生成し、即座に採点。
-            <br />
-            AIが弱点を分析して、あなただけの改善プランを提案します。
+          <p className="mt-4 text-lg md:text-xl font-bold text-[var(--ink-soft)]">
+            小学2年生の かんじ <strong className="text-[var(--ink)]">160もじ</strong> を たのしく おぼえよう！
           </p>
+        </header>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up">
-            <button
-              onClick={() => router.push("/exam")}
-              className="btn-primary text-lg flex items-center justify-center gap-2"
-            >
-              <Zap className="w-5 h-5" />
-              模擬試験を開始する
-            </button>
-            <button
-              onClick={() => router.push("/interview")}
-              className="btn-secondary text-lg flex items-center justify-center gap-2"
-            >
-              <Mic className="w-5 h-5" />
-              面接練習をする
-            </button>
-            {recentResults.length > 0 && (
-              <button
-                onClick={() => {
-                  import("@/lib/storage").then(({ setCurrentResult }) => {
-                    setCurrentResult(recentResults[0]);
-                    router.push("/results");
-                  });
-                }}
-                className="btn-secondary text-lg flex items-center justify-center gap-2"
-              >
-                <TrendingUp className="w-5 h-5" />
-                前回の結果を見る
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Floating orbs */}
-        <div
-          className="absolute top-20 left-1/4 w-64 h-64 rounded-full opacity-10 animate-float pointer-events-none"
-          style={{ background: "radial-gradient(circle, #4f8ef7, transparent)" }}
-        />
-        <div
-          className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full opacity-10 animate-float pointer-events-none"
-          style={{ background: "radial-gradient(circle, #a855f7, transparent)", animationDelay: "2s" }}
-        />
-      </section>
-
-      {/* Features */}
-      <section className="px-4 pb-16">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-6">
-            <FeatureCard
-              icon={<BookOpen className="w-8 h-8" />}
-              title="AI模擬試験"
-              description="語彙・読解・英作文を含む本番形式の問題をAIがリアルタイムで生成"
-              color="blue"
-              delay="0s"
-            />
-            <FeatureCard
-              icon={<Award className="w-8 h-8" />}
-              title="即座に採点"
-              description="選択問題は自動採点。英作文はAIが内容・文法・語彙を総合評価"
-              color="purple"
-              delay="0.1s"
-            />
-            <FeatureCard
-              icon={<Brain className="w-8 h-8" />}
-              title="弱点分析 & 改善提案"
-              description="間違えたパターンをAIが深く分析し、優先度付きの学習アクションを提案"
-              color="cyan"
-              delay="0.2s"
-            />
-            <FeatureCard
-              icon={<Mic className="w-8 h-8" />}
-              title="面接練習"
-              description="AIが面接官として本番形式で質問。音読・イラスト描写・意見表明をテキストで練習し採点"
-              color="purple"
-              delay="0.3s"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Exam Format Info */}
-      <section className="px-4 pb-16">
-        <div className="max-w-4xl mx-auto">
-          <div className="glass rounded-2xl p-8">
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
-              <Clock className="w-6 h-6 text-blue-400" />
-              試験構成
+        {/* 進捗カード */}
+        <section className="panel p-6 mb-8 anim-pop">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xl font-black flex items-center gap-2">
+              <span>⭐</span>きみの がくしゅうきろく
             </h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              <ExamSection
-                label="語彙・文法"
-                count="10問"
-                points="10点"
-                color="blue"
-              />
-              <ExamSection
-                label="読解"
-                count="6問"
-                points="6点"
-                color="purple"
-              />
-              <ExamSection
-                label="英作文"
-                count="1問"
-                points="16点"
-                color="cyan"
-              />
-            </div>
-            <div className="mt-6 pt-6 border-t border-white/10 flex flex-wrap gap-4 justify-between items-center">
-              <div className="text-slate-400">
-                合計 <span className="text-white font-bold text-xl">42点</span>
-              </div>
-              <div className="glass rounded-lg px-4 py-2 text-sm text-slate-300">
-                合格目安: <span className="text-green-400 font-bold">65%以上 (約27点)</span>
-              </div>
-            </div>
+            <span className="chip badge-mastered">{pct}%</span>
           </div>
-        </div>
-      </section>
-
-      {/* Recent Results */}
-      {recentResults.length > 0 && (
-        <section className="px-4 pb-20">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl font-bold mb-6">最近の受験結果</h2>
-            <div className="space-y-4">
-              {recentResults.map((result) => (
-                <ResultRow key={result.id} result={result} router={router} />
-              ))}
-            </div>
+          <div className="progress-track mb-4">
+            <div className="progress-fill" style={{ width: `${pct}%` }} />
+          </div>
+          <div className="grid grid-cols-3 gap-3 text-center">
+            <Stat label="マスター" value={mastered} color="bg-yellow-300" />
+            <Stat label="れんしゅう中" value={learning} color="bg-sky-300" />
+            <Stat label="のこり" value={total - mastered - learning} color="bg-white" />
           </div>
         </section>
-      )}
+
+        {/* モード選択 */}
+        <section className="grid sm:grid-cols-2 gap-5 mb-8">
+          <ModeCard
+            href="/quiz?type=yomi"
+            emoji="🔤"
+            title="よみクイズ"
+            sub="かんじの よみかたを あてよう"
+            cls="btn-pink"
+          />
+          <ModeCard
+            href="/quiz?type=imi"
+            emoji="💡"
+            title="いみクイズ"
+            sub="かんじの いみを あてよう"
+            cls="btn-blue"
+          />
+          <ModeCard
+            href="/flashcard"
+            emoji="🃏"
+            title="フラッシュカード"
+            sub="めくって おぼえよう"
+            cls="btn-green"
+          />
+          <ModeCard
+            href="/list"
+            emoji="📖"
+            title="かんじ いちらん"
+            sub="160もじを ぜんぶ みる"
+            cls="btn-yellow"
+          />
+        </section>
+
+        {/* 進捗詳細 */}
+        <div className="text-center">
+          <Link href="/progress" className="btn-pop btn-white inline-block">
+            🏆 がくしゅうきろくを みる
+          </Link>
+        </div>
+
+        <footer className="mt-12 text-center text-sm text-[var(--ink-soft)] font-bold">
+          まいにち すこしずつ がんばろう！
+        </footer>
+      </div>
     </main>
   );
 }
 
-function FeatureCard({
-  icon,
-  title,
-  description,
-  color,
-  delay,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  color: "blue" | "purple" | "cyan";
-  delay: string;
-}) {
-  const colorMap = {
-    blue: "text-blue-400 bg-blue-400/10",
-    purple: "text-purple-400 bg-purple-400/10",
-    cyan: "text-cyan-400 bg-cyan-400/10",
-  };
-
+function Stat({ label, value, color }: { label: string; value: number; color: string }) {
   return (
     <div
-      className="glass rounded-2xl p-6 card-hover animate-fade-in-up"
-      style={{ animationDelay: delay }}
+      className={`rounded-xl border-[3px] border-[var(--ink)] py-3 ${color}`}
+      style={{ boxShadow: "3px 3px 0 var(--ink)" }}
     >
-      <div className={`inline-flex p-3 rounded-xl mb-4 ${colorMap[color]}`}>
-        {icon}
-      </div>
-      <h3 className="text-xl font-bold mb-3">{title}</h3>
-      <p className="text-slate-400 leading-relaxed">{description}</p>
+      <div className="text-2xl font-black">{value}</div>
+      <div className="text-xs font-bold">{label}</div>
     </div>
   );
 }
 
-function ExamSection({
-  label,
-  count,
-  points,
-  color,
+function ModeCard({
+  href,
+  emoji,
+  title,
+  sub,
+  cls,
 }: {
-  label: string;
-  count: string;
-  points: string;
-  color: "blue" | "purple" | "cyan";
+  href: string;
+  emoji: string;
+  title: string;
+  sub: string;
+  cls: string;
 }) {
-  const colorMap = {
-    blue: "text-blue-400",
-    purple: "text-purple-400",
-    cyan: "text-cyan-400",
-  };
-
   return (
-    <div className="text-center">
-      <div className={`text-3xl font-black mb-1 ${colorMap[color]}`}>{count}</div>
-      <div className="font-semibold mb-1">{label}</div>
-      <div className="text-slate-400 text-sm">{points}</div>
-    </div>
-  );
-}
-
-function ResultRow({
-  result,
-  router,
-}: {
-  result: ExamResult;
-  router: ReturnType<typeof useRouter>;
-}) {
-  const percentage = Math.round((result.scores.total / result.scores.maxTotal) * 100);
-  const date = new Date(result.date).toLocaleDateString("ja-JP", {
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
-  return (
-    <button
-      onClick={() => {
-        import("@/lib/storage").then(({ setCurrentResult }) => {
-          setCurrentResult(result);
-          router.push("/results");
-        });
-      }}
-      className="w-full glass rounded-xl p-4 flex items-center gap-4 card-hover text-left"
-    >
-      <div
-        className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 ${
-          result.passed
-            ? "bg-green-400/20 text-green-400"
-            : "bg-red-400/20 text-red-400"
-        }`}
-      >
-        {percentage}%
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold">
-            {result.scores.total} / {result.scores.maxTotal}点
-          </span>
-          <span
-            className={`text-xs px-2 py-0.5 rounded-full ${
-              result.passed
-                ? "bg-green-400/20 text-green-400"
-                : "bg-red-400/20 text-red-400"
-            }`}
-          >
-            {result.passed ? "合格圏" : "不合格圏"}
-          </span>
-        </div>
-        <div className="text-sm text-slate-400">{date}</div>
-      </div>
-      <ChevronRight className="w-5 h-5 text-slate-500 flex-shrink-0" />
-    </button>
+    <Link href={href} className={`btn-pop ${cls} flex-col py-6 text-center`}>
+      <div className="text-5xl mb-2">{emoji}</div>
+      <div className="text-2xl font-black">{title}</div>
+      <div className="text-sm font-bold opacity-90 mt-1">{sub}</div>
+    </Link>
   );
 }

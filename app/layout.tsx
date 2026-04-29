@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "英検2級 AI模擬試験",
-  description: "AIを活用した英検2級対策アプリ。模擬試験・採点・弱点分析まで。",
+  title: "かんじチャレンジ｜小学2年生の漢字をたのしくおぼえよう",
+  description:
+    "小学2年生で習う160字の漢字を、クイズ・フラッシュカードで楽しく学べる学習アプリ。",
 };
 
 export default function RootLayout({
@@ -14,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body>
-        <div className="mesh-bg" />
+        <div className="sky-bg" />
         {children}
       </body>
     </html>
