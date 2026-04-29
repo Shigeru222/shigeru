@@ -102,8 +102,17 @@ export default function HomePage() {
           />
         </section>
 
-        <footer className="mt-12 text-center text-sm text-[var(--ink-soft)] font-bold">
-          まいにち すこしずつ がんばろう！
+        <footer className="mt-12 text-center text-sm text-[var(--ink-soft)] font-bold space-y-2">
+          <p>まいにち すこしずつ がんばろう！</p>
+          <p>
+            <a
+              href="/REQUIREMENTS.md"
+              download
+              className="underline hover:text-[var(--pop-orange)]"
+            >
+              📄 要件定義書をダウンロード
+            </a>
+          </p>
         </footer>
       </div>
     </main>
