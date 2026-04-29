@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { KANJI_LIST } from "@/lib/kanji-data";
 import type { Kanji, QuizQuestion, QuizType } from "@/lib/kanji-types";
@@ -113,7 +113,15 @@ function QuizPage() {
           <p className="font-black text-lg mb-3 text-[var(--ink-soft)]">
             {type === "yomi" ? "この かんじの よみかたは？" : "この かんじの いみは？"}
           </p>
-          <div className="text-8xl md:text-9xl font-black leading-none">{q.kanji.char}</div>
+          <div
+            className={`font-black leading-none ${
+              q.type === "yomi" && q.prompt.length > 1
+                ? "text-6xl md:text-7xl"
+                : "text-8xl md:text-9xl"
+            }`}
+          >
+            {q.prompt}
+          </div>
         </div>
 
         {/* 選択肢 */}
@@ -169,47 +177,73 @@ function QuizPage() {
   );
 }
 
-function buildQuiz(type: QuizType, length: number): QuizQuestion[] {
-  const pool =
-    type === "yomi" ? KANJI_LIST.filter((k) => k.kun.length > 0) : KANJI_LIST;
-  const shuffled = shuffle(pool).slice(0, length);
-  return shuffled.map((kanji) => makeQuestion(kanji, type));
+type YomiPrompt = { word: string; reading: string };
+
+/**
+ * よみクイズの出題語を返す。
+ * 「漢字＋送り仮名」の形（古い、走る 等）を優先。なければ単漢字＋訓読み。
+ * 訓読みが無い漢字は対象外（null）。
+ */
+function getYomiPrompt(k: Kanji): YomiPrompt | null {
+  if (k.kun.length === 0) return null;
+  for (const ex of k.examples) {
+    if (!ex.word.startsWith(k.char)) continue;
+    for (const kun of k.kun) {
+      if (ex.reading.startsWith(kun)) return ex;
+    }
+  }
+  return { word: k.char, reading: k.kun[0] };
 }
 
-function makeQuestion(kanji: Kanji, type: QuizType): QuizQuestion {
+function buildQuiz(type: QuizType, length: number): QuizQuestion[] {
   if (type === "yomi") {
-    const correctReading = kanji.kun[0];
-    const distractors = pickDistractorKun(kanji, 3);
-    const choices = shuffle([correctReading, ...distractors]);
-    return {
-      type,
-      kanji,
-      choices,
-      answerIndex: choices.indexOf(correctReading),
-    };
+    const prompted = KANJI_LIST.flatMap((k) => {
+      const p = getYomiPrompt(k);
+      return p ? [{ k, p }] : [];
+    });
+    return shuffle(prompted)
+      .slice(0, length)
+      .map(({ k, p }) => makeYomiQuestion(k, p));
   }
-  const correct = kanji.meaning;
-  const distractors = pickDistractorMeanings(kanji, 3);
-  const choices = shuffle([correct, ...distractors]);
+  return shuffle(KANJI_LIST)
+    .slice(0, length)
+    .map((k) => makeImiQuestion(k));
+}
+
+function makeYomiQuestion(kanji: Kanji, p: YomiPrompt): QuizQuestion {
+  const distractors = pickDistractorYomi(kanji, p.reading, 3);
+  const choices = shuffle([p.reading, ...distractors]);
   return {
-    type,
+    type: "yomi",
     kanji,
+    prompt: p.word,
     choices,
-    answerIndex: choices.indexOf(correct),
+    answerIndex: choices.indexOf(p.reading),
   };
 }
 
-function pickDistractorKun(target: Kanji, n: number): string[] {
-  const targetReadings = new Set(target.kun);
+function makeImiQuestion(kanji: Kanji): QuizQuestion {
+  const distractors = pickDistractorMeanings(kanji, 3);
+  const choices = shuffle([kanji.meaning, ...distractors]);
+  return {
+    type: "imi",
+    kanji,
+    prompt: kanji.char,
+    choices,
+    answerIndex: choices.indexOf(kanji.meaning),
+  };
+}
+
+function pickDistractorYomi(target: Kanji, correct: string, n: number): string[] {
   const pool: string[] = [];
   for (const k of shuffle(KANJI_LIST)) {
     if (k.char === target.char) continue;
-    if (k.kun.length === 0) continue;
-    const reading = k.kun[0];
-    if (!targetReadings.has(reading) && !pool.includes(reading)) {
-      pool.push(reading);
-      if (pool.length >= n) return pool;
-    }
+    const p = getYomiPrompt(k);
+    if (!p) continue;
+    if (p.reading === correct) continue;
+    if (pool.includes(p.reading)) continue;
+    pool.push(p.reading);
+    if (pool.length >= n) return pool;
   }
   return pool;
 }

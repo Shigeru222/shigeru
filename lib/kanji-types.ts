@@ -37,6 +37,8 @@ export type QuizType = "yomi" | "imi";
 export type QuizQuestion = {
   type: QuizType;
   kanji: Kanji;
+  /** 出題する語（よみクイズ時の「古い」など。意味クイズ時は単漢字） */
+  prompt: string;
   /** 選択肢（正解を含む4つ） */
   choices: string[];
   /** 正解の選択肢index */
