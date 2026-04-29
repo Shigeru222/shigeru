@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { KANJI_LIST } from "@/lib/kanji-data";
 import type { Kanji, QuizQuestion, QuizType } from "@/lib/kanji-types";
 import { loadProgress, recordAnswer, saveProgress } from "@/lib/kanji-storage";
+import { getYomiPrompt, shuffle, type YomiPrompt } from "@/lib/kanji-quiz";
 
 const QUIZ_LENGTH = 10;
 
@@ -177,24 +178,6 @@ function QuizPage() {
   );
 }
 
-type YomiPrompt = { word: string; reading: string };
-
-/**
- * よみクイズの出題語を返す。
- * 「漢字＋送り仮名」の形（古い、走る 等）を優先。なければ単漢字＋訓読み。
- * 訓読みが無い漢字は対象外（null）。
- */
-function getYomiPrompt(k: Kanji): YomiPrompt | null {
-  if (k.kun.length === 0) return null;
-  for (const ex of k.examples) {
-    if (!ex.word.startsWith(k.char)) continue;
-    for (const kun of k.kun) {
-      if (ex.reading.startsWith(kun)) return ex;
-    }
-  }
-  return { word: k.char, reading: k.kun[0] };
-}
-
 function buildQuiz(type: QuizType, length: number): QuizQuestion[] {
   if (type === "yomi") {
     const prompted = KANJI_LIST.flatMap((k) => {
@@ -260,11 +243,3 @@ function pickDistractorMeanings(target: Kanji, n: number): string[] {
   return pool;
 }
 
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}

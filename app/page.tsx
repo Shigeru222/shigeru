@@ -73,6 +73,13 @@ export default function HomePage() {
             cls="btn-blue"
           />
           <ModeCard
+            href="/write"
+            emoji="✏️"
+            title="かきクイズ"
+            sub="ペンで かんじを かいてみよう"
+            cls="btn-orange"
+          />
+          <ModeCard
             href="/flashcard"
             emoji="🃏"
             title="フラッシュカード"
@@ -86,14 +93,14 @@ export default function HomePage() {
             sub="160もじを ぜんぶ みる"
             cls="btn-yellow"
           />
+          <ModeCard
+            href="/progress"
+            emoji="🏆"
+            title="がくしゅうきろく"
+            sub="きみの せいせきを みる"
+            cls="btn-purple"
+          />
         </section>
-
-        {/* 進捗詳細 */}
-        <div className="text-center">
-          <Link href="/progress" className="btn-pop btn-white inline-block">
-            🏆 がくしゅうきろくを みる
-          </Link>
-        </div>
 
         <footer className="mt-12 text-center text-sm text-[var(--ink-soft)] font-bold">
           まいにち すこしずつ がんばろう！
