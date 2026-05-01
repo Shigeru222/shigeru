@@ -17,14 +17,16 @@ async function upstashCommand(command: unknown[]): Promise<{ result: unknown }> 
   return res.json();
 }
 
-async function upstashGet(): Promise<MentalTrainingSubmission[]> {
-  const data = await upstashCommand(['GET', KV_KEY]);
-  if (!data.result) return [];
-  return JSON.parse(data.result as string);
+// LRANGE: 全件取得（LPUSHで追加しているので最新順）
+async function upstashGetAll(): Promise<MentalTrainingSubmission[]> {
+  const data = await upstashCommand(['LRANGE', KV_KEY, '0', '-1']);
+  const items = (data.result as string[] | null) ?? [];
+  return items.map(item => JSON.parse(item));
 }
 
-async function upstashSet(submissions: MentalTrainingSubmission[]): Promise<void> {
-  await upstashCommand(['SET', KV_KEY, JSON.stringify(submissions)]);
+// LPUSH: 1件だけ先頭に追加（アトミック操作 — 同時送信でもデータ消失なし）
+async function upstashPush(submission: MentalTrainingSubmission): Promise<void> {
+  await upstashCommand(['LPUSH', KV_KEY, JSON.stringify(submission)]);
 }
 
 async function fileGet(): Promise<MentalTrainingSubmission[]> {
@@ -35,20 +37,23 @@ async function fileGet(): Promise<MentalTrainingSubmission[]> {
   try { return JSON.parse(fs.readFileSync(file, 'utf-8')); } catch { return []; }
 }
 
-async function fileSet(submissions: MentalTrainingSubmission[]): Promise<void> {
+async function fileAdd(submission: MentalTrainingSubmission): Promise<void> {
   const fs = await import('fs');
   const path = await import('path');
   const dir = path.join(process.cwd(), 'data');
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(path.join(dir, 'mental-training.json'), JSON.stringify(submissions, null, 2), 'utf-8');
+  const existing = await fileGet();
+  existing.unshift(submission);
+  fs.writeFileSync(path.join(dir, 'mental-training.json'), JSON.stringify(existing, null, 2), 'utf-8');
 }
 
 const useUpstash = () => Boolean(process.env.KV_REST_API_URL);
 
 export async function getSubmissions(): Promise<MentalTrainingSubmission[]> {
-  return useUpstash() ? upstashGet() : fileGet();
+  return useUpstash() ? upstashGetAll() : fileGet();
 }
 
-export async function saveSubmissions(submissions: MentalTrainingSubmission[]): Promise<void> {
-  return useUpstash() ? upstashSet(submissions) : fileSet(submissions);
+// 1件追加（同時アクセス安全）
+export async function addSubmission(submission: MentalTrainingSubmission): Promise<void> {
+  return useUpstash() ? upstashPush(submission) : fileAdd(submission);
 }

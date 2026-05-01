@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MentalTrainingSubmission } from '@/lib/mental-training-types';
-import { getSubmissions, saveSubmissions } from '@/lib/mental-training-storage';
+import { getSubmissions, addSubmission } from '@/lib/mental-training-storage';
 
 export async function GET(request: NextRequest) {
   const pin = request.nextUrl.searchParams.get('pin');
@@ -42,9 +42,7 @@ export async function POST(request: NextRequest) {
       reflection: String(reflection || '').trim(),
     };
 
-    const submissions = await getSubmissions();
-    submissions.unshift(submission);
-    await saveSubmissions(submissions);
+    await addSubmission(submission);
 
     return NextResponse.json({ success: true, id: submission.id });
   } catch (err) {
