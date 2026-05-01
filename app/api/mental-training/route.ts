@@ -1,31 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
 import { MentalTrainingSubmission } from '@/lib/mental-training-types';
-
-// On Vercel, process.cwd() is read-only; use /tmp instead
-const DATA_DIR = process.env.VERCEL ? '/tmp' : path.join(process.cwd(), 'data');
-const DATA_FILE = path.join(DATA_DIR, 'mental-training.json');
-
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-}
-
-function readSubmissions(): MentalTrainingSubmission[] {
-  try {
-    if (!fs.existsSync(DATA_FILE)) return [];
-    return JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
-  } catch {
-    return [];
-  }
-}
-
-function writeSubmissions(submissions: MentalTrainingSubmission[]): void {
-  ensureDataDir();
-  fs.writeFileSync(DATA_FILE, JSON.stringify(submissions, null, 2), 'utf-8');
-}
+import { getSubmissions, saveSubmissions } from '@/lib/mental-training-storage';
 
 export async function GET(request: NextRequest) {
   const pin = request.nextUrl.searchParams.get('pin');
@@ -35,14 +10,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'PINが正しくありません' }, { status: 401 });
   }
 
-  const grade = request.nextUrl.searchParams.get('grade');
-  let submissions = readSubmissions();
-
-  if (grade && grade !== 'all') {
-    submissions = submissions.filter(s => s.grade === grade);
+  try {
+    const grade = request.nextUrl.searchParams.get('grade');
+    let submissions = await getSubmissions();
+    if (grade && grade !== 'all') {
+      submissions = submissions.filter(s => s.grade === grade);
+    }
+    return NextResponse.json(submissions);
+  } catch (err) {
+    console.error('GET error:', err);
+    return NextResponse.json({ error: '取得に失敗しました' }, { status: 500 });
   }
-
-  return NextResponse.json(submissions);
 }
 
 export async function POST(request: NextRequest) {
@@ -64,13 +42,13 @@ export async function POST(request: NextRequest) {
       reflection: String(reflection || '').trim(),
     };
 
-    const submissions = readSubmissions();
+    const submissions = await getSubmissions();
     submissions.unshift(submission);
-    writeSubmissions(submissions);
+    await saveSubmissions(submissions);
 
     return NextResponse.json({ success: true, id: submission.id });
   } catch (err) {
-    console.error('POST /api/mental-training error:', err);
+    console.error('POST error:', err);
     return NextResponse.json({ error: '保存に失敗しました。しばらくしてから再度お試しください。' }, { status: 500 });
   }
 }
