@@ -3,7 +3,9 @@ import fs from 'fs';
 import path from 'path';
 import { MentalTrainingSubmission } from '@/lib/mental-training-types';
 
-const DATA_FILE = path.join(process.cwd(), 'data', 'mental-training.json');
+const DATA_FILE = process.env.VERCEL
+  ? '/tmp/mental-training.json'
+  : path.join(process.cwd(), 'data', 'mental-training.json');
 
 function readSubmissions(): MentalTrainingSubmission[] {
   try {
