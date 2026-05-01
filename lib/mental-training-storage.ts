@@ -3,8 +3,8 @@ import type { MentalTrainingSubmission } from './mental-training-types';
 const KV_KEY = 'mental_training_submissions';
 
 async function upstashCommand(command: unknown[]): Promise<{ result: unknown }> {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const url = process.env.KV_REST_API_URL;
+  const token = process.env.KV_REST_API_TOKEN;
   const res = await fetch(url!, {
     method: 'POST',
     headers: {
@@ -43,7 +43,7 @@ async function fileSet(submissions: MentalTrainingSubmission[]): Promise<void> {
   fs.writeFileSync(path.join(dir, 'mental-training.json'), JSON.stringify(submissions, null, 2), 'utf-8');
 }
 
-const useUpstash = () => Boolean(process.env.UPSTASH_REDIS_REST_URL);
+const useUpstash = () => Boolean(process.env.KV_REST_API_URL);
 
 export async function getSubmissions(): Promise<MentalTrainingSubmission[]> {
   return useUpstash() ? upstashGet() : fileGet();
