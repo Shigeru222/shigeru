@@ -270,12 +270,7 @@ export default function MentalTrainingPage() {
           </button>
         </form>
 
-        {/* Coach link */}
-        <p className="text-center text-slate-600 text-xs mt-6 pb-8">
-          <a href="/mental-training/coach" className="hover:text-slate-400 transition-colors">
-            監督・コーチの方はこちら
-          </a>
-        </p>
+        {/* Coach link removed intentionally */}
       </div>
     </main>
   );
