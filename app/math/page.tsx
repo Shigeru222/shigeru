@@ -102,7 +102,7 @@ export default function MathHomePage() {
   };
 
   return (
-    <main className="min-h-screen px-4 py-12">
+    <main className="min-h-screen px-4 py-6 md:py-12 safe-bottom">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-3 mb-2">
@@ -119,10 +119,10 @@ export default function MathHomePage() {
         </div>
 
         <div className="mb-10 mt-4">
-          <h1 className="text-4xl md:text-5xl font-black mb-3 leading-tight">
+          <h1 className="text-3xl md:text-5xl font-black mb-3 leading-tight">
             数学<span className="gradient-text">チャレンジ</span>
           </h1>
-          <p className="text-slate-400 text-lg">
+          <p className="text-slate-400 text-base md:text-lg">
             展開・因数分解・二次方程式・三角比など高1数学を楽しく攻略！
           </p>
         </div>

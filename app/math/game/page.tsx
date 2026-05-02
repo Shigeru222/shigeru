@@ -184,20 +184,20 @@ function GameContent() {
   }
 
   return (
-    <div className="min-h-screen px-4 py-8">
+    <div className="min-h-screen px-4 py-4 md:py-8 safe-bottom">
       <div className="max-w-2xl mx-auto">
         {/* Top bar */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4 md:mb-6 gap-2">
           <button
             onClick={() => router.push("/math")}
-            className="p-2 rounded-lg glass hover:bg-white/10 transition-colors"
+            className="p-2 rounded-lg glass hover:bg-white/10 transition-colors flex-shrink-0"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 flex-wrap justify-end">
             {modeParam === "survival" && (
-              <div className="flex gap-1">
+              <div className="flex gap-0.5">
                 {Array.from({ length: SURVIVAL_LIVES }).map((_, i) => (
                   <Heart
                     key={i}
@@ -208,20 +208,20 @@ function GameContent() {
             )}
 
             {modeParam === "time-attack" && (
-              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg glass ${state.timeLeft <= 10 ? "text-red-400" : "text-cyan-400"}`}>
-                <Clock className="w-4 h-4" />
+              <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg glass text-sm ${state.timeLeft <= 10 ? "text-red-400" : "text-cyan-400"}`}>
+                <Clock className="w-3.5 h-3.5" />
                 <span className="font-mono font-bold">{state.timeLeft}s</span>
               </div>
             )}
 
             {modeParam === "quiz" && (
-              <div className="text-sm text-slate-400 glass px-3 py-1.5 rounded-lg">
+              <div className="text-xs text-slate-400 glass px-2.5 py-1 rounded-lg">
                 {state.correct + state.wrong} / {QUIZ_TOTAL}
               </div>
             )}
 
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg glass text-yellow-400">
-              <Trophy className="w-4 h-4" />
+            <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg glass text-yellow-400 text-sm">
+              <Trophy className="w-3.5 h-3.5" />
               <span className="font-bold">{state.score}</span>
             </div>
           </div>
@@ -248,12 +248,12 @@ function GameContent() {
 
         {/* Question card */}
         {currentQ && (
-          <div className={`glass rounded-2xl p-6 mb-6 ${animClass}`}>
-            <div className="flex items-center gap-2 mb-4">
-              <span className="text-xs px-2 py-1 rounded-full bg-blue-400/10 text-blue-400 border border-blue-400/20">
+          <div className={`glass rounded-2xl p-4 md:p-6 mb-4 md:mb-6 ${animClass}`}>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-blue-400/10 text-blue-400 border border-blue-400/20">
                 {TOPIC_LABELS[currentQ.topic]}
               </span>
-              <span className={`text-xs px-2 py-1 rounded-full ${
+              <span className={`text-xs px-2 py-0.5 rounded-full ${
                 currentQ.difficulty === "easy" ? "bg-green-400/10 text-green-400 border border-green-400/20" :
                 currentQ.difficulty === "medium" ? "bg-yellow-400/10 text-yellow-400 border border-yellow-400/20" :
                 "bg-red-400/10 text-red-400 border border-red-400/20"
@@ -262,7 +262,7 @@ function GameContent() {
               </span>
             </div>
 
-            <p className="text-lg font-medium leading-relaxed mb-2"
+            <p className="text-base md:text-lg font-medium leading-relaxed mb-2"
               dangerouslySetInnerHTML={{ __html: currentQ.questionHtml }}
             />
 
@@ -276,7 +276,7 @@ function GameContent() {
 
         {/* Options */}
         {currentQ && (
-          <div className="space-y-3 mb-6">
+          <div className="space-y-2.5 md:space-y-3 mb-4 md:mb-6">
             {currentQ.options.map((opt, i) => {
               let cls = "option-btn";
               if (state.phase === "answer") {
@@ -317,7 +317,7 @@ function GameContent() {
 
         {/* Answer feedback */}
         {state.phase === "answer" && currentQ && (
-          <div className={`glass rounded-xl p-4 mb-4 animate-fade-in border ${
+          <div className={`glass rounded-xl p-3 md:p-4 mb-3 md:mb-4 animate-fade-in border ${
             state.selectedIndex === currentQ.correctIndex
               ? "border-green-400/30"
               : "border-red-400/30"
@@ -381,9 +381,9 @@ function ResultScreen({
   }).filter((s) => s.total > 0);
 
   return (
-    <div className="min-h-screen px-4 py-12">
+    <div className="min-h-screen px-4 py-8 safe-bottom">
       <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-10">
+        <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-24 h-24 rounded-full mb-4"
             style={{
               background: pct >= 70

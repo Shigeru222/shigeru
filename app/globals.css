@@ -162,6 +162,40 @@ body {
   }
 }
 
+/* Mobile touch improvements */
+button, [role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.option-btn {
+  min-height: 56px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.option-btn:active:not(:disabled) {
+  transform: scale(0.98);
+  transition: transform 0.1s;
+}
+
+.btn-primary:active {
+  transform: translateY(1px) !important;
+}
+
+.btn-secondary:active {
+  transform: translateY(1px) !important;
+}
+
+/* iOS safe area support */
+.safe-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+.safe-top {
+  padding-top: max(1rem, env(safe-area-inset-top));
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
