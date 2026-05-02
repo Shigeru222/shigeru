@@ -1,0 +1,170 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #0a0a1a;
+  --bg-secondary: #0f0f2e;
+  --accent-blue: #4f8ef7;
+  --accent-purple: #a855f7;
+  --accent-cyan: #22d3ee;
+  --accent-green: #10b981;
+  --accent-red: #f43f5e;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  background: var(--bg-primary);
+  color: #e2e8f0;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans",
+    "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", "Meiryo",
+    sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+@layer components {
+  .glass {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #4f8ef7, #a855f7, #22d3ee);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .btn-primary {
+    @apply relative overflow-hidden rounded-xl px-8 py-4 font-bold text-white transition-all duration-300;
+    background: linear-gradient(135deg, #4f8ef7, #a855f7);
+    box-shadow: 0 4px 24px rgba(79, 142, 247, 0.4);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(79, 142, 247, 0.6);
+  }
+
+  .btn-primary:active {
+    transform: translateY(1px) !important;
+  }
+
+  .btn-secondary {
+    @apply relative overflow-hidden rounded-xl px-8 py-4 font-bold transition-all duration-300;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #e2e8f0;
+  }
+
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+  }
+
+  .btn-secondary:active {
+    transform: translateY(1px) !important;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(79, 142, 247, 0.2);
+  }
+
+  .progress-bar {
+    @apply h-2 rounded-full overflow-hidden;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-700;
+    background: linear-gradient(90deg, #4f8ef7, #a855f7);
+  }
+
+  .option-btn {
+    @apply w-full text-left rounded-xl p-4 transition-all duration-200 cursor-pointer;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #e2e8f0;
+    min-height: 56px;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .option-btn:hover {
+    background: rgba(79, 142, 247, 0.1);
+    border-color: rgba(79, 142, 247, 0.4);
+  }
+
+  .option-btn:active:not(:disabled) {
+    transform: scale(0.98);
+    transition: transform 0.1s;
+  }
+
+  .option-btn.selected {
+    background: rgba(79, 142, 247, 0.15);
+    border-color: rgba(79, 142, 247, 0.6);
+    color: #93c5fd;
+  }
+
+  .option-btn.correct {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.6);
+    color: #6ee7b7;
+  }
+
+  .option-btn.incorrect {
+    background: rgba(244, 63, 94, 0.15);
+    border-color: rgba(244, 63, 94, 0.6);
+    color: #fda4af;
+  }
+}
+
+/* Mobile touch improvements */
+button, [role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* iOS safe area support */
+.safe-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(79, 142, 247, 0.4);
+  border-radius: 3px;
+}
+
+/* Mesh gradient background */
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(ellipse at 20% 20%, rgba(79, 142, 247, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(34, 211, 238, 0.04) 0%, transparent 70%),
+    #0a0a1a;
+}
