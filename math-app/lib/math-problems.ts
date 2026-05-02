@@ -18,6 +18,8 @@ export interface MathQuestion {
   correctIndex: number;
   explanation: string;
   hint?: string;
+  steps?: string[];
+  keyPoint?: string;
 }
 
 export const TOPIC_LABELS: Record<Topic, string> = {
@@ -617,6 +619,378 @@ function buildOptions(
 }
 
 // ---- PUBLIC API ----
+
+// ---- ELITE (最難関) PROBLEMS ----
+
+const ELITE_PROBLEMS: MathQuestion[] = [
+  // ===== 展開 =====
+  {
+    id: "elite-exp-1",
+    topic: "expansion",
+    difficulty: "hard",
+    question: "(x+y+z)² を展開せよ",
+    questionHtml: "<strong>(x+y+z)²</strong> を展開せよ",
+    options: [
+      "x²+y²+z²+2xy+2yz+2zx",
+      "x²+y²+z²+xy+yz+zx",
+      "x²+y²+z²+2xy+yz+zx",
+      "x²+y²+z²",
+    ],
+    correctIndex: 0,
+    explanation: "(x+y+z)² = x²+y²+z²+2xy+2yz+2zx（3項の平方展開）",
+    keyPoint: "(a+b+c)² = a²+b²+c²+2ab+2bc+2ca",
+    steps: [
+      "x, y, z をそれぞれ a, b, c と見る",
+      "各項の自乗を並べる: x²+y²+z²",
+      "異なる2項の積を2倍にして加える: +2xy+2yz+2zx",
+      "まとめると x²+y²+z²+2xy+2yz+2zx",
+    ],
+  },
+  {
+    id: "elite-exp-2",
+    topic: "expansion",
+    difficulty: "hard",
+    question: "(x+1)(x-1)(x²+1) を展開せよ",
+    questionHtml: "<strong>(x+1)(x-1)(x²+1)</strong> を展開せよ",
+    options: ["x⁴-1", "x⁴+1", "x⁴-x²-1", "x⁴-2x²+1"],
+    correctIndex: 0,
+    explanation: "(x+1)(x-1)=x²-1、次に(x²-1)(x²+1)=x⁴-1",
+    keyPoint: "差の積 (a+b)(a-b)=a²-b² を繰り返し使う",
+    steps: [
+      "まず (x+1)(x-1) を計算する",
+      "(x+1)(x-1) = x²-1²= x²-1（差の積の公式）",
+      "次に (x²-1)(x²+1) を計算する",
+      "同じく差の積: (x²)²-1² = x⁴-1",
+    ],
+  },
+  {
+    id: "elite-exp-3",
+    topic: "expansion",
+    difficulty: "hard",
+    question: "(2x-3)³ を展開せよ",
+    questionHtml: "<strong>(2x-3)³</strong> を展開せよ",
+    options: [
+      "8x³-36x²+54x-27",
+      "8x³-18x²+27x-27",
+      "6x³-36x²+54x-27",
+      "8x³-36x²+27x-27",
+    ],
+    correctIndex: 0,
+    explanation: "(a-b)³=a³-3a²b+3ab²-b³ に a=2x, b=3 を代入：8x³-36x²+54x-27",
+    keyPoint: "(a-b)³ = a³-3a²b+3ab²-b³",
+    steps: [
+      "a=2x, b=3 と置く",
+      "a³ = (2x)³ = 8x³",
+      "3a²b = 3·(2x)²·3 = 3·4x²·3 = 36x²",
+      "3ab² = 3·(2x)·9 = 54x",
+      "b³ = 3³ = 27",
+      "代入してまとめる: 8x³ - 36x² + 54x - 27",
+    ],
+  },
+
+  // ===== 因数分解 =====
+  {
+    id: "elite-fac-1",
+    topic: "factoring",
+    difficulty: "hard",
+    question: "x⁴ - 5x² + 4 を因数分解せよ",
+    questionHtml: "<strong>x⁴ - 5x² + 4</strong> を因数分解せよ",
+    options: [
+      "(x+1)(x-1)(x+2)(x-2)",
+      "(x²-1)(x²-4)",
+      "(x+1)(x-1)(x²-4)",
+      "(x²+1)(x²-4)",
+    ],
+    correctIndex: 0,
+    explanation: "x²=Xとおくと X²-5X+4=(X-1)(X-4)=(x²-1)(x²-4)=(x+1)(x-1)(x+2)(x-2)",
+    keyPoint: "t=x² と置いて二次式に変換してから因数分解",
+    steps: [
+      "t = x² と置くと x⁴-5x²+4 は t²-5t+4 になる",
+      "t²-5t+4 を因数分解: (t-1)(t-4)",
+      "t を x² に戻す: (x²-1)(x²-4)",
+      "各因数をさらに差の積で分解: (x+1)(x-1)·(x+2)(x-2)",
+    ],
+  },
+  {
+    id: "elite-fac-2",
+    topic: "factoring",
+    difficulty: "hard",
+    question: "2x² + 7x + 3 を因数分解せよ",
+    questionHtml: "<strong>2x² + 7x + 3</strong> を因数分解せよ",
+    options: ["(2x+1)(x+3)", "(x+1)(2x+3)", "(2x+3)(x+1)", "(x+3)(2x+1)"],
+    correctIndex: 0,
+    explanation: "たすき掛け：2×3=6、和が7になる組合せ→1と6。(2x+1)(x+3)を確認：2x²+6x+x+3=2x²+7x+3 ✓",
+    keyPoint: "たすき掛け：a·cの組合せを探して交差の和がbになるか確認",
+    steps: [
+      "a=2, b=7, c=3 のたすき掛けを考える",
+      "2と3の組み合わせ: 2×3+1×1=7 ✓（左列2,1 / 右列3,1）",
+      "(2x+1)(x+3) と推測して展開確認",
+      "2x²+6x+x+3 = 2x²+7x+3 ✓",
+    ],
+  },
+  {
+    id: "elite-fac-3",
+    topic: "factoring",
+    difficulty: "hard",
+    question: "x³ + 3x² + 3x + 1 を因数分解せよ",
+    questionHtml: "<strong>x³ + 3x² + 3x + 1</strong> を因数分解せよ",
+    options: ["(x+1)³", "(x+1)²(x-1)", "(x+1)(x²+2x+1)", "(x³+1)(x+1)"],
+    correctIndex: 0,
+    explanation: "(a+b)³=a³+3a²b+3ab²+b³ の形。a=x, b=1 で (x+1)³",
+    keyPoint: "(a+b)³ = a³+3a²b+3ab²+b³（係数 1,3,3,1 はパスカルの三角形）",
+    steps: [
+      "係数 1, 3, 3, 1 はパスカルの三角形の第3行に対応",
+      "(a+b)³ = a³+3a²b+3ab²+b³ の公式と比較",
+      "a=x, b=1 と対応させる",
+      "x³+3x²·1+3x·1²+1³ = 与式 ✓",
+    ],
+  },
+
+  // ===== 二次方程式 =====
+  {
+    id: "elite-qeq-1",
+    topic: "quadratic-eq",
+    difficulty: "hard",
+    question: "x² + 2x - 2 = 0 を解け",
+    questionHtml: "<strong>x² + 2x - 2 = 0</strong> を解け",
+    options: ["x = -1±√3", "x = 1±√3", "x = -1±√2", "x = -2±√6"],
+    correctIndex: 0,
+    explanation: "x = (-2±√(4+8))/2 = (-2±√12)/2 = (-2±2√3)/2 = -1±√3",
+    keyPoint: "解の公式: x = (-b ± √(b²-4ac)) / (2a)",
+    steps: [
+      "a=1, b=2, c=-2 を確認",
+      "判別式: D = b²-4ac = 4-4(1)(-2) = 4+8 = 12",
+      "√D = √12 = √(4×3) = 2√3 に整理",
+      "x = (-2 ± 2√3) / 2 = -1 ± √3",
+    ],
+  },
+  {
+    id: "elite-qeq-2",
+    topic: "quadratic-eq",
+    difficulty: "hard",
+    question: "2x² - 3x - 1 = 0 を解け",
+    questionHtml: "<strong>2x² - 3x - 1 = 0</strong> を解け",
+    options: [
+      "x = (3±√17)/4",
+      "x = (3±√7)/4",
+      "x = (3±√17)/2",
+      "x = (-3±√17)/4",
+    ],
+    correctIndex: 0,
+    explanation: "x = (3±√(9+8))/4 = (3±√17)/4",
+    keyPoint: "解の公式: x = (-b ± √(b²-4ac)) / (2a)",
+    steps: [
+      "a=2, b=-3, c=-1 を確認",
+      "判別式: D = (-3)²-4(2)(-1) = 9+8 = 17",
+      "x = (3 ± √17) / (2×2)",
+      "x = (3 ± √17) / 4",
+    ],
+  },
+  {
+    id: "elite-qeq-3",
+    topic: "quadratic-eq",
+    difficulty: "hard",
+    question: "x² + px + q = 0 の2つの解が 3+√2 と 3-√2 のとき、p と q の値は？",
+    questionHtml: "x² + px + q = 0 の2解が <strong>3+√2</strong> と <strong>3-√2</strong> のとき、<strong>p, q</strong> の値は？",
+    options: ["p = -6, q = 7", "p = 6, q = 7", "p = -6, q = 11", "p = -3, q = 7"],
+    correctIndex: 0,
+    explanation: "解と係数の関係：和 = (3+√2)+(3-√2) = 6 = -p → p=-6、積 = (3+√2)(3-√2) = 9-2 = 7 = q",
+    keyPoint: "解と係数の関係: 2解の和=-p, 2解の積=q",
+    steps: [
+      "2解の和 = (3+√2)+(3-√2) = 6（√2 が消える）",
+      "解と係数の関係より 和 = -p なので p = -6",
+      "2解の積 = (3+√2)(3-√2) = 3²-(√2)² = 9-2 = 7",
+      "解と係数の関係より 積 = q なので q = 7",
+    ],
+  },
+
+  // ===== 三角比 =====
+  {
+    id: "elite-tri-1",
+    topic: "trigonometry",
+    difficulty: "hard",
+    question: "sin θ + cos θ = 1/2 のとき、sin θ cos θ の値を求めよ",
+    questionHtml: "<strong>sin θ + cos θ = 1/2</strong> のとき、<strong>sin θ cos θ</strong> の値を求めよ",
+    options: ["-3/8", "3/8", "-1/8", "1/4"],
+    correctIndex: 0,
+    explanation: "両辺を2乗：1 + 2sinθcosθ = 1/4 → 2sinθcosθ = -3/4 → sinθcosθ = -3/8",
+    keyPoint: "両辺を2乗して sin²θ+cos²θ=1 を利用する",
+    steps: [
+      "sinθ+cosθ = 1/2 の両辺を2乗する",
+      "(sinθ+cosθ)² = 1/4",
+      "展開: sin²θ + 2sinθcosθ + cos²θ = 1/4",
+      "sin²θ+cos²θ=1 を代入: 1 + 2sinθcosθ = 1/4",
+      "2sinθcosθ = 1/4 - 1 = -3/4",
+      "sinθcosθ = -3/8",
+    ],
+  },
+  {
+    id: "elite-tri-2",
+    topic: "trigonometry",
+    difficulty: "hard",
+    question: "△ABCでa=7, b=5, c=3のとき、cos A の値を求めよ",
+    questionHtml: "△ABCで<strong>a=7, b=5, c=3</strong>のとき、<strong>cos A</strong> の値を求めよ",
+    options: ["1/2", "-1/2", "√3/2", "1/4"],
+    correctIndex: 1,
+    explanation: "余弦定理：cos A = (b²+c²-a²)/(2bc) = (25+9-49)/30 = -15/30 = -1/2",
+    keyPoint: "余弦定理: cos A = (b²+c²-a²) / (2bc)",
+    steps: [
+      "余弦定理の公式を確認: cos A = (b²+c²-a²)/(2bc)",
+      "a=7, b=5, c=3 を代入",
+      "分子: b²+c²-a² = 25+9-49 = -15",
+      "分母: 2bc = 2×5×3 = 30",
+      "cos A = -15/30 = -1/2",
+    ],
+  },
+  {
+    id: "elite-tri-3",
+    topic: "trigonometry",
+    difficulty: "hard",
+    question: "0° ≤ θ ≤ 180° で 2cos²θ + cosθ - 1 = 0 を解け",
+    questionHtml: "0° ≤ θ ≤ 180° で <strong>2cos²θ + cosθ - 1 = 0</strong> を解け",
+    options: ["θ = 60°, 180°", "θ = 60°", "θ = 120°, 180°", "θ = 0°, 60°"],
+    correctIndex: 0,
+    explanation: "(2cosθ-1)(cosθ+1)=0 → cosθ=1/2 or cosθ=-1。cosθ=1/2→θ=60°、cosθ=-1→θ=180°",
+    keyPoint: "t=cosθ と置いて二次方程式として因数分解",
+    steps: [
+      "t = cosθ と置くと 2t²+t-1=0 になる",
+      "因数分解: (2t-1)(t+1) = 0",
+      "t = 1/2 または t = -1",
+      "cosθ = 1/2 → θ = 60°（0°〜180° の範囲）",
+      "cosθ = -1 → θ = 180°",
+    ],
+  },
+
+  // ===== 確率 =====
+  {
+    id: "elite-prob-1",
+    topic: "probability",
+    difficulty: "hard",
+    question: "袋Aに赤2個・白3個、袋Bに赤4個・白1個。コインの表なら袋A、裏なら袋Bから1個取り出す。赤だった確率で、袋Aから取り出した確率は？",
+    questionHtml: "袋A（赤2白3）/ 袋B（赤4白1）。コインで袋を選び1個取り出すと<strong>赤</strong>だった。<strong>袋Aから</strong>取り出した確率は？",
+    options: ["1/3", "2/5", "1/2", "2/3"],
+    correctIndex: 0,
+    explanation: "P(A|赤)=P(赤|A)P(A)/P(赤)=(2/5×1/2)/[(2/5×1/2)+(4/5×1/2)]=(1/5)/(3/5)=1/3（ベイズの定理）",
+    keyPoint: "ベイズの定理: P(A|赤) = P(赤|A)·P(A) / P(赤)",
+    steps: [
+      "事前確率: P(A)=P(B)=1/2（コインで袋を選ぶ）",
+      "条件付き確率: P(赤|A)=2/5, P(赤|B)=4/5",
+      "全確率: P(赤)=P(赤|A)P(A)+P(赤|B)P(B) = 1/5+2/5 = 3/5",
+      "ベイズの定理: P(A|赤) = P(赤|A)P(A)/P(赤) = (1/5)÷(3/5) = 1/3",
+    ],
+  },
+  {
+    id: "elite-prob-2",
+    topic: "probability",
+    difficulty: "hard",
+    question: "1〜9の整数から重複なく3つ選ぶ。3つの積が偶数になる確率は？",
+    questionHtml: "1〜9の整数から重複なく3つ選ぶ。<strong>積が偶数</strong>になる確率は？",
+    options: ["37/42", "5/42", "1/2", "7/9"],
+    correctIndex: 0,
+    explanation: "余事象（積が奇数）= 奇数3つを選ぶ確率。奇数は1,3,5,7,9の5個。₅C₃/₉C₃ = 10/84 = 5/42。よって偶数の確率 = 1-5/42 = 37/42",
+    keyPoint: "余事象「積が奇数」= すべて奇数を選ぶ場合",
+    steps: [
+      "全体の場合の数: ₉C₃ = 84 通り",
+      "積が偶数 の余事象 = 積が奇数 = 3つとも奇数を選ぶ",
+      "1〜9の奇数: 1, 3, 5, 7, 9 の5個",
+      "奇数のみ3つを選ぶ: ₅C₃ = 10 通り",
+      "P(奇数のみ) = 10/84 = 5/42",
+      "P(積が偶数) = 1 - 5/42 = 37/42",
+    ],
+  },
+  {
+    id: "elite-prob-3",
+    topic: "probability",
+    difficulty: "hard",
+    question: "コインを5回投げる。表が連続して2回以上出る確率は？",
+    questionHtml: "コインを5回投げる。<strong>表が連続して2回以上</strong>出る確率は？",
+    options: ["3/4", "1/2", "19/32", "13/32"],
+    correctIndex: 2,
+    explanation: "余事象（表が連続2回以上出ない）を求める。全体2⁵=32通り。「連続2回表なし」のパターンを数えると13通り（詳細は樹形図）。よって1-13/32 = 19/32",
+    keyPoint: "余事象「HHを1度も含まない列」を数える",
+    steps: [
+      "全体の場合の数: 2⁵ = 32 通り",
+      "余事象「表が連続2回以上出ない（HHを含まない）」を数える",
+      "長さ5でHHを含まない列を系統的に数えると 13 通り",
+      "P(連続なし) = 13/32",
+      "P(表が連続2回以上) = 1 - 13/32 = 19/32",
+    ],
+  },
+
+  // ===== 二次関数 =====
+  {
+    id: "elite-qfn-1",
+    topic: "quadratic-fn",
+    difficulty: "hard",
+    question: "放物線 y = x² と直線 y = 2x + k が接するとき、k の値は？",
+    questionHtml: "放物線 <strong>y = x²</strong> と直線 <strong>y = 2x + k</strong> が接するとき、<strong>k</strong> の値は？",
+    options: ["k = -1", "k = 1", "k = -2", "k = 2"],
+    correctIndex: 0,
+    explanation: "接するとき重解条件 D=0。x²=2x+k → x²-2x-k=0、D = 4+4k = 0 → k = -1",
+    keyPoint: "接する条件 = 連立方程式が重解を持つ → 判別式 D=0",
+    steps: [
+      "y=x² と y=2x+k を連立: x²=2x+k",
+      "整理: x²-2x-k = 0",
+      "接するとき（重解）→ D=0",
+      "D = (-2)²-4(1)(-k) = 4+4k = 0",
+      "4k = -4 → k = -1",
+    ],
+  },
+  {
+    id: "elite-qfn-2",
+    topic: "quadratic-fn",
+    difficulty: "hard",
+    question: "y = 2x² - 8x + 5 の最小値と、そのときの x の値は？",
+    questionHtml: "<strong>y = 2x² - 8x + 5</strong> の最小値と、そのときの <strong>x</strong> の値は？",
+    options: ["x=2 で最小値 -3", "x=-2 で最小値 -3", "x=2 で最小値 3", "x=4 で最小値 -3"],
+    correctIndex: 0,
+    explanation: "y = 2(x-2)² - 3 と変形。頂点 (2, -3) が最小値（a=2>0なので下に凸）",
+    keyPoint: "平方完成: y=a(x-p)²+q の頂点は (p, q)",
+    steps: [
+      "y = 2x²-8x+5 を平方完成する",
+      "= 2(x²-4x) + 5",
+      "x²-4x に +4-4 を補う: 2(x²-4x+4-4)+5",
+      "= 2(x-2)² - 8 + 5",
+      "= 2(x-2)² - 3",
+      "a=2>0 なので下に凸 → x=2 のとき最小値 -3",
+    ],
+  },
+];
+
+export function generateEliteQuestion(): MathQuestion {
+  const q = ELITE_PROBLEMS[rand(0, ELITE_PROBLEMS.length - 1)];
+  // Return a fresh copy with new id
+  return { ...q, id: Math.random().toString(36).slice(2) };
+}
+
+export function generateEliteChallengeSet(): MathQuestion[] {
+  // Pick 2 from each topic, no repeats
+  const byTopic: Record<string, MathQuestion[]> = {};
+  for (const q of ELITE_PROBLEMS) {
+    if (!byTopic[q.topic]) byTopic[q.topic] = [];
+    byTopic[q.topic].push(q);
+  }
+  const selected: MathQuestion[] = [];
+  for (const topic of Object.keys(byTopic)) {
+    const topicQs = shuffle([...byTopic[topic]]);
+    selected.push(...topicQs.slice(0, 2));
+  }
+  return shuffle(selected).map((q) => ({ ...q, id: Math.random().toString(36).slice(2) }));
+}
+
+export function getChallengeRank(pct: number): {
+  rank: string;
+  title: string;
+  color: string;
+  message: string;
+} {
+  if (pct === 100) return { rank: "S+", title: "数学の覇者", color: "#ffd700", message: "完全制覇！あなたは本物の天才です！" };
+  if (pct >= 90)  return { rank: "S",  title: "超一流",     color: "#ffd700", message: "圧巻の結果！トップ校合格レベル！" };
+  if (pct >= 80)  return { rank: "A",  title: "優秀",       color: "#60a5fa", message: "素晴らしい！難関校レベルです！" };
+  if (pct >= 70)  return { rank: "B",  title: "実力者",     color: "#4ade80", message: "よくできました！あと一歩！" };
+  if (pct >= 50)  return { rank: "C",  title: "挑戦者",     color: "#fb923c", message: "難しかったけど、よく挑戦した！" };
+  return               { rank: "D",  title: "修行中",     color: "#f87171", message: "最難関は甘くない。基礎を固めて再挑戦！" };
+}
 
 export function generateQuestion(topic: Topic, difficulty: Difficulty): MathQuestion {
   switch (topic) {

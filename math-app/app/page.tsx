@@ -14,6 +14,8 @@ import {
   Percent,
   Sigma,
   Hash,
+  Skull,
+  Flame,
 } from "lucide-react";
 import {
   TOPIC_LABELS,
@@ -81,7 +83,7 @@ export default function MathHomePage() {
           </div>
         </div>
 
-        <div className="mb-8 md:mb-10 mt-4">
+        <div className="mb-6 md:mb-8 mt-4">
           <h1 className="text-3xl md:text-5xl font-black mb-3 leading-tight">
             数学<span className="gradient-text">チャレンジ</span>
           </h1>
@@ -89,6 +91,31 @@ export default function MathHomePage() {
             展開・因数分解・二次方程式・三角比など高1数学を楽しく攻略！
           </p>
         </div>
+
+        {/* Elite Challenge Banner */}
+        <button
+          onClick={() => router.push("/challenge")}
+          className="w-full rounded-2xl p-4 mb-6 flex items-center gap-4 transition-all duration-300 hover:scale-[1.02] active:scale-100 text-left"
+          style={{
+            background: "linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,140,0,0.08))",
+            border: "1px solid rgba(255,215,0,0.35)",
+            boxShadow: "0 0 24px rgba(255,215,0,0.08)",
+          }}
+        >
+          <div className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center"
+            style={{ background: "rgba(255,215,0,0.15)" }}>
+            <Skull className="w-6 h-6" style={{ color: "#ffd700" }} />
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="font-black" style={{ color: "#ffd700" }}>最難関チャレンジ</span>
+              <span className="text-xs px-2 py-0.5 rounded-full font-bold"
+                style={{ background: "rgba(255,215,0,0.2)", color: "#ffd700" }}>NEW</span>
+            </div>
+            <p className="text-xs text-slate-400">全単元の最高難度問題に挑戦！S〜Dランク判定</p>
+          </div>
+          <Flame className="w-5 h-5 flex-shrink-0" style={{ color: "#ff8c00" }} />
+        </button>
 
         {step === "topics" ? (
           <>
