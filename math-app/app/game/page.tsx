@@ -77,13 +77,11 @@ function GameContent() {
 
   const currentQ = state.questions[state.current] ?? null;
 
-  // Generate first question on mount
   useEffect(() => {
     nextQuestion({ ...initState(modeParam) }, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Timer for time-attack
   useEffect(() => {
     if (modeParam !== "time-attack" || state.phase !== "playing") return;
     timerRef.current = setInterval(() => {
@@ -101,10 +99,8 @@ function GameContent() {
   }, [modeParam, state.phase, state.current]);
 
   function nextQuestion(base: GameState, fresh = false) {
-    // Pick a topic cycling through selected ones
     const idx = base.questions.length % topics.length;
     const topic = topics[idx];
-    // Ramp difficulty: easy for first 2, medium for next 4, hard after
     const diffMap: ("easy" | "medium" | "hard")[] = ["easy", "easy", "medium", "medium", "medium", "hard", "hard"];
     const diffIdx = Math.min(Math.floor(base.questions.length / 2), diffMap.length - 1);
     const difficulty = diffMap[diffIdx];
@@ -139,13 +135,11 @@ function GameContent() {
       { question: currentQ, chosen: idx, correct: isCorrect },
     ];
 
-    // Check end conditions
     const newCorrect = state.correct + (isCorrect ? 1 : 0);
     const newWrong = state.wrong + (!isCorrect ? 1 : 0);
     const total = newCorrect + newWrong;
 
     let nextPhase: Phase = "answer";
-    if (modeParam === "quiz" && total >= QUIZ_TOTAL) nextPhase = "answer"; // show answer then result
     if (modeParam === "survival" && newLives <= 0) nextPhase = "answer";
 
     setState((prev: GameState) => ({
@@ -177,10 +171,17 @@ function GameContent() {
   }
 
   if (state.phase === "result") {
-    return <ResultScreen state={state} mode={modeParam} topics={topics} onRestart={() => {
-      const fresh = initState(modeParam);
-      nextQuestion(fresh, true);
-    }} />;
+    return (
+      <ResultScreen
+        state={state}
+        mode={modeParam}
+        topics={topics}
+        onRestart={() => {
+          const fresh = initState(modeParam);
+          nextQuestion(fresh, true);
+        }}
+      />
+    );
   }
 
   return (
@@ -189,7 +190,7 @@ function GameContent() {
         {/* Top bar */}
         <div className="flex items-center justify-between mb-4 md:mb-6 gap-2">
           <button
-            onClick={() => router.push("/math")}
+            onClick={() => router.push("/")}
             className="p-2 rounded-lg glass hover:bg-white/10 transition-colors flex-shrink-0"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -232,13 +233,15 @@ function GameContent() {
           <div className="flex items-center justify-center gap-1 mb-4 text-orange-400 animate-fade-in">
             <Flame className="w-5 h-5" />
             <span className="font-bold">{state.streak}連続正解！</span>
-            {state.streak >= 3 && <span className="text-sm">スコア+{Math.min(state.streak, 4) * 20}ボーナス</span>}
+            {state.streak >= 3 && (
+              <span className="text-sm">スコア+{Math.min(state.streak, 4) * 20}ボーナス</span>
+            )}
           </div>
         )}
 
         {/* Progress bar (quiz mode) */}
         {modeParam === "quiz" && (
-          <div className="progress-bar mb-6">
+          <div className="progress-bar mb-4">
             <div
               className="progress-fill"
               style={{ width: `${((state.correct + state.wrong) / QUIZ_TOTAL) * 100}%` }}
@@ -248,35 +251,36 @@ function GameContent() {
 
         {/* Question card */}
         {currentQ && (
-          <div className={`glass rounded-2xl p-4 md:p-6 mb-4 md:mb-6 ${animClass}`}>
+          <div className={`glass rounded-2xl p-4 md:p-6 mb-4 ${animClass}`}>
             <div className="flex items-center gap-2 mb-3">
               <span className="text-xs px-2 py-0.5 rounded-full bg-blue-400/10 text-blue-400 border border-blue-400/20">
                 {TOPIC_LABELS[currentQ.topic]}
               </span>
               <span className={`text-xs px-2 py-0.5 rounded-full ${
-                currentQ.difficulty === "easy" ? "bg-green-400/10 text-green-400 border border-green-400/20" :
-                currentQ.difficulty === "medium" ? "bg-yellow-400/10 text-yellow-400 border border-yellow-400/20" :
-                "bg-red-400/10 text-red-400 border border-red-400/20"
+                currentQ.difficulty === "easy"
+                  ? "bg-green-400/10 text-green-400 border border-green-400/20"
+                  : currentQ.difficulty === "medium"
+                  ? "bg-yellow-400/10 text-yellow-400 border border-yellow-400/20"
+                  : "bg-red-400/10 text-red-400 border border-red-400/20"
               }`}>
                 {currentQ.difficulty === "easy" ? "やさしい" : currentQ.difficulty === "medium" ? "ふつう" : "むずかしい"}
               </span>
             </div>
 
-            <p className="text-base md:text-lg font-medium leading-relaxed mb-2"
+            <p
+              className="text-base md:text-lg font-medium leading-relaxed mb-2"
               dangerouslySetInnerHTML={{ __html: currentQ.questionHtml }}
             />
 
             {currentQ.hint && state.phase === "playing" && (
-              <p className="text-xs text-slate-500 mt-2">
-                ヒント：{currentQ.hint}
-              </p>
+              <p className="text-xs text-slate-500 mt-2">ヒント：{currentQ.hint}</p>
             )}
           </div>
         )}
 
         {/* Options */}
         {currentQ && (
-          <div className="space-y-2.5 md:space-y-3 mb-4 md:mb-6">
+          <div className="space-y-2.5 mb-4">
             {currentQ.options.map((opt, i) => {
               let cls = "option-btn";
               if (state.phase === "answer") {
@@ -317,7 +321,7 @@ function GameContent() {
 
         {/* Answer feedback */}
         {state.phase === "answer" && currentQ && (
-          <div className={`glass rounded-xl p-3 md:p-4 mb-3 md:mb-4 animate-fade-in border ${
+          <div className={`glass rounded-xl p-3 md:p-4 mb-3 animate-fade-in border ${
             state.selectedIndex === currentQ.correctIndex
               ? "border-green-400/30"
               : "border-red-400/30"
@@ -374,22 +378,27 @@ function ResultScreen({
   const pct = total > 0 ? Math.round((state.correct / total) * 100) : 0;
   const message = getEncouragementMessage(state.correct, Math.max(total, 1));
 
-  const topicStats = topics.map((t) => {
-    const qs = state.history.filter((h) => h.question.topic === t);
-    const c = qs.filter((h) => h.correct).length;
-    return { topic: t, correct: c, total: qs.length };
-  }).filter((s) => s.total > 0);
+  const topicStats = topics
+    .map((t) => {
+      const qs = state.history.filter((h) => h.question.topic === t);
+      const c = qs.filter((h) => h.correct).length;
+      return { topic: t, correct: c, total: qs.length };
+    })
+    .filter((s) => s.total > 0);
 
   return (
     <div className="min-h-screen px-4 py-8 safe-bottom">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full mb-4"
+          <div
+            className="inline-flex items-center justify-center w-24 h-24 rounded-full mb-4"
             style={{
-              background: pct >= 70
-                ? "radial-gradient(circle, rgba(16,185,129,0.3), rgba(16,185,129,0.05))"
-                : "radial-gradient(circle, rgba(79,142,247,0.3), rgba(79,142,247,0.05))"
-            }}>
+              background:
+                pct >= 70
+                  ? "radial-gradient(circle, rgba(16,185,129,0.3), rgba(16,185,129,0.05))"
+                  : "radial-gradient(circle, rgba(79,142,247,0.3), rgba(79,142,247,0.05))",
+            }}
+          >
             <Trophy className={`w-12 h-12 ${pct >= 70 ? "text-green-400" : "text-blue-400"}`} />
           </div>
 
@@ -453,7 +462,8 @@ function ResultScreen({
                 .filter((h) => !h.correct)
                 .map((h, i) => (
                   <div key={i} className="border border-white/8 rounded-xl p-4">
-                    <p className="text-sm font-medium mb-1 text-slate-300"
+                    <p
+                      className="text-sm font-medium mb-1 text-slate-300"
                       dangerouslySetInnerHTML={{ __html: h.question.questionHtml }}
                     />
                     <p className="text-xs text-red-400 mb-1">
@@ -479,17 +489,11 @@ function ResultScreen({
             もう一度チャレンジ
           </button>
           <button
-            onClick={() => router.push("/math")}
+            onClick={() => router.push("/")}
             className="btn-secondary flex-1 flex items-center justify-center gap-2"
           >
-            <Zap className="w-5 h-5" />
-            単元を変える
-          </button>
-          <button
-            onClick={() => router.push("/")}
-            className="btn-secondary flex items-center justify-center gap-2 sm:w-auto px-6"
-          >
             <Home className="w-5 h-5" />
+            単元を変える
           </button>
         </div>
       </div>
@@ -522,11 +526,13 @@ function StatCard({
 
 export default function MathGamePage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-slate-400">読み込み中...</div>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-slate-400">読み込み中...</div>
+        </div>
+      }
+    >
       <GameContent />
     </Suspense>
   );
