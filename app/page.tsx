@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BookOpen, Brain, TrendingUp, Zap, Clock, Award, ChevronRight, Star, Mic } from "lucide-react";
+import { BookOpen, Brain, TrendingUp, Zap, Clock, Award, ChevronRight, Star, Mic, Calculator } from "lucide-react";
 import { getExamResults } from "@/lib/storage";
 import { ExamResult } from "@/lib/types";
 
@@ -50,6 +50,13 @@ export default function HomePage() {
             >
               <Mic className="w-5 h-5" />
               面接練習をする
+            </button>
+            <button
+              onClick={() => router.push("/math")}
+              className="btn-secondary text-lg flex items-center justify-center gap-2"
+            >
+              <Calculator className="w-5 h-5" />
+              数学チャレンジ
             </button>
             {recentResults.length > 0 && (
               <button
@@ -110,6 +117,13 @@ export default function HomePage() {
               description="AIが面接官として本番形式で質問。音読・イラスト描写・意見表明をテキストで練習し採点"
               color="purple"
               delay="0.3s"
+            />
+            <FeatureCard
+              icon={<Calculator className="w-8 h-8" />}
+              title="数学チャレンジ"
+              description="高1数学（展開・因数分解・二次方程式・三角比・確率）をゲームで楽しく攻略！3種のゲームモードで挑戦"
+              color="cyan"
+              delay="0.4s"
             />
           </div>
         </div>
