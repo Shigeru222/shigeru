@@ -10,6 +10,7 @@ import {
   type OkuriganaPrompt,
 } from "@/lib/kanji-quiz";
 import { loadProgress, recordAnswer, saveProgress } from "@/lib/kanji-storage";
+import { KANJI_HINTS } from "@/lib/kanji-hints";
 import DrawingCanvas, {
   type DrawingCanvasHandle,
 } from "../write/DrawingCanvas";
@@ -17,6 +18,14 @@ import DrawingCanvas, {
 const ROUND_LENGTH = 10;
 
 type Question = { kanji: Kanji; prompt: OkuriganaPrompt };
+
+/** ヒント文に答えの読みが含まれていないか検査して返す */
+function hintFor(char: string, answerReading: string): string | null {
+  const hint = KANJI_HINTS[char];
+  if (!hint) return null;
+  if (hint.includes(answerReading)) return null;
+  return hint;
+}
 
 export default function OkuriganaPage() {
   const questions = useMemo<Question[]>(() => {
@@ -120,8 +129,9 @@ export default function OkuriganaPage() {
             {q.prompt.reading}
           </div>
           {showHint && (
-            <p className="mt-3 text-base font-bold">
-              いみ：<span className="text-[var(--pop-orange)]">{q.kanji.meaning}</span>
+            <p className="mt-3 text-base font-bold leading-relaxed">
+              <span className="text-[var(--pop-orange)] mr-1">ヒント：</span>
+              {hintFor(q.kanji.char, q.prompt.reading) ?? q.kanji.meaning}
             </p>
           )}
         </div>

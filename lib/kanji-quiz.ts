@@ -56,10 +56,12 @@ export function getOkuriganaPrompt(k: Kanji): OkuriganaPrompt | null {
   for (const ex of k.examples) {
     if (!ex.word.startsWith(k.char)) continue;
     if (ex.word.length <= 1) continue;
+    const okurigana = ex.word.slice(k.char.length);
+    if (okurigana.length === 0) continue;
+    // 漢字の後ろは ひらがなのみ（内側の「側」のような漢字を弾く）
+    if (!isAllHiragana(okurigana)) continue;
     for (const kun of k.kun) {
       if (!ex.reading.startsWith(kun)) continue;
-      const okurigana = ex.word.slice(k.char.length);
-      if (okurigana.length === 0) continue;
       return {
         kanji: k.char,
         kanjiReading: kun,
@@ -70,4 +72,8 @@ export function getOkuriganaPrompt(k: Kanji): OkuriganaPrompt | null {
     }
   }
   return null;
+}
+
+function isAllHiragana(s: string): boolean {
+  return /^[぀-ゟー]+$/.test(s);
 }
