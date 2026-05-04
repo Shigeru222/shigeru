@@ -120,7 +120,8 @@ export default function WritePage() {
             ref={canvasRef}
             size={320}
             lineWidth={10}
-            guideKanji={traceMode ? q.kanji.char : undefined}
+            guideText={traceMode ? q.kanji.char : undefined}
+            cells={1}
           />
           <p className="mt-2 text-sm font-bold text-[var(--ink-soft)]">
             👆 ペンや ゆびで かいてね
