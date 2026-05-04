@@ -80,6 +80,13 @@ export default function HomePage() {
             cls="btn-orange"
           />
           <ModeCard
+            href="/okurigana"
+            emoji="🖊️"
+            title="おくりがなクイズ"
+            sub="古□ → かきいれて おぼえよう"
+            cls="btn-purple"
+          />
+          <ModeCard
             href="/flashcard"
             emoji="🃏"
             title="フラッシュカード"
