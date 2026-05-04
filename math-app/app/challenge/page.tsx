@@ -28,6 +28,36 @@ import {
 const QUESTION_SECONDS = 90;
 const TOTAL_QUESTIONS = 10;
 
+function ExplanationDetail({ question }: { question: MathQuestion }) {
+  return (
+    <div className="space-y-2.5">
+      {question.keyPoint && (
+        <div className="flex items-start gap-2 rounded-lg px-3 py-2 text-xs"
+          style={{ background: "rgba(255,215,0,0.08)", border: "1px solid rgba(255,215,0,0.2)" }}>
+          <span className="flex-shrink-0 font-bold" style={{ color: "#ffd700" }}>⚡ポイント</span>
+          <span style={{ color: "#fbbf24" }}>{question.keyPoint}</span>
+        </div>
+      )}
+      {question.steps && question.steps.length > 0 && (
+        <ol className="space-y-1.5">
+          {question.steps.map((step, i) => (
+            <li key={i} className="flex items-start gap-2.5 text-sm">
+              <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold mt-0.5"
+                style={{ background: "rgba(96,165,250,0.15)", color: "#60a5fa", border: "1px solid rgba(96,165,250,0.3)" }}>
+                {i + 1}
+              </span>
+              <span className="text-slate-300 leading-relaxed">{step}</span>
+            </li>
+          ))}
+        </ol>
+      )}
+      <p className="text-xs text-slate-500 leading-relaxed border-t border-white/5 pt-2">
+        <span className="text-slate-600">まとめ：</span>{question.explanation}
+      </p>
+    </div>
+  );
+}
+
 type Phase = "intro" | "playing" | "answer" | "result";
 
 interface ChallengeState {
@@ -265,10 +295,10 @@ export default function ChallengePage() {
                     {h.chosen !== null && (
                       <p className="text-xs text-red-400 mb-1">あなたの答え：{h.question.options[h.chosen]}</p>
                     )}
-                    <p className="text-xs text-green-400 mb-2">
+                    <p className="text-xs text-green-400 mb-3">
                       正解：{h.question.options[h.question.correctIndex]}
                     </p>
-                    <p className="text-xs text-slate-400 leading-relaxed">{h.question.explanation}</p>
+                    <ExplanationDetail question={h.question} />
                   </div>
                 ))}
               </div>
@@ -424,21 +454,19 @@ export default function ChallengePage() {
 
         {/* Feedback */}
         {state.phase === "answer" && currentQ && !state.timedOut && (
-          <div className={`rounded-xl p-3 mb-4 animate-fade-in ${
+          <div className={`rounded-xl p-4 mb-4 animate-fade-in ${
             state.selectedIndex === currentQ.correctIndex
               ? "border border-green-400/30"
               : "border border-red-400/30"
           }`} style={{ background: "rgba(255,255,255,0.03)" }}>
-            <div className={`flex items-center gap-2 font-bold mb-1.5 ${
+            <div className={`flex items-center gap-2 font-bold mb-3 ${
               state.selectedIndex === currentQ.correctIndex ? "text-green-400" : "text-red-400"
             }`}>
               {state.selectedIndex === currentQ.correctIndex
                 ? <><CheckCircle className="w-4 h-4" /> 正解！</>
                 : <><XCircle className="w-4 h-4" /> 不正解</>}
             </div>
-            <p className="text-sm text-slate-300 leading-relaxed">
-              <span className="text-slate-500">解説：</span>{currentQ.explanation}
-            </p>
+            <ExplanationDetail question={currentQ} />
           </div>
         )}
 
