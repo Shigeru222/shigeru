@@ -37,6 +37,7 @@
   ],
   "exclude": [
     "node_modules",
-    "asset-app"
+    "asset-app",
+    "math-app"
   ]
 }
