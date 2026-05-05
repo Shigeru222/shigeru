@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
 
     const headers = [
       '提出日時', '名前', '学年', '記入日',
+      'アイデンティティ',
       'ネガティブな言葉①', 'ポジティブな言葉①',
       'ネガティブな言葉②', 'ポジティブな言葉②',
       'ネガティブな言葉③', 'ポジティブな言葉③',
@@ -42,6 +43,7 @@ export async function GET(request: NextRequest) {
       const pairs = Array.from({ length: 5 }, (_, i) => s.wordPairs[i] || { negative: '', positive: '' });
       return [
         submittedAt, s.name, s.grade, s.date,
+        s.identity ?? '',
         ...pairs.flatMap(p => [p.negative, p.positive]),
         s.reflection,
       ].map(escapeCSV).join(',');

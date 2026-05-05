@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, grade, date, wordPairs, reflection } = body;
+    const { name, grade, date, wordPairs, reflection, identity } = body;
 
     if (!name || !grade || !date || !wordPairs) {
       return NextResponse.json({ error: '必須項目が入力されていません' }, { status: 400 });
@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
       submittedAt: new Date().toISOString(),
       wordPairs,
       reflection: String(reflection || '').trim(),
+      identity: String(identity || '').trim(),
     };
 
     await addSubmission(submission);

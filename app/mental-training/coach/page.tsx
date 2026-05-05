@@ -259,6 +259,14 @@ export default function CoachPage() {
                         );
                       })}
 
+                      {/* Identity */}
+                      {s.identity && (
+                        <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-3">
+                          <p className="text-xs text-yellow-400 mb-1 font-medium">アイデンティティ</p>
+                          <p className="text-sm text-slate-300 whitespace-pre-wrap">{s.identity}</p>
+                        </div>
+                      )}
+
                       {/* Reflection */}
                       {s.reflection && (
                         <div className="bg-white/5 rounded-xl p-3">

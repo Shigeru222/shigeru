@@ -13,4 +13,5 @@ export interface MentalTrainingSubmission {
   submittedAt: string;
   wordPairs: WordPair[];
   reflection: string;
+  identity: string;
 }

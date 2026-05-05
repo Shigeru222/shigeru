@@ -30,6 +30,7 @@ export default function MentalTrainingPage() {
     Array.from({ length: 5 }, () => ({ negative: "", positive: "" }))
   );
   const [reflection, setReflection] = useState("");
+  const [identity, setIdentity] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
@@ -57,7 +58,7 @@ export default function MentalTrainingPage() {
       const res = await fetch("/api/mental-training", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), grade, date, wordPairs, reflection }),
+        body: JSON.stringify({ name: name.trim(), grade, date, wordPairs, reflection, identity }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -77,6 +78,7 @@ export default function MentalTrainingPage() {
     setDate(today());
     setWordPairs(Array.from({ length: 5 }, () => ({ negative: "", positive: "" })));
     setReflection("");
+    setIdentity("");
     setSubmitted(false);
     setError("");
   }
@@ -229,6 +231,21 @@ export default function MentalTrainingPage() {
               <li>・「できない」→「まだできていない」「次でいい」など、小さな一歩を大事に。</li>
               <li>・脳は口にした瞬間、その言葉を信じて実現しようとする。言葉を選ぼう！</li>
             </ul>
+          </div>
+
+          {/* Identity */}
+          <div className="glass rounded-2xl p-4 sm:p-6 border border-yellow-500/20">
+            <h2 className="font-bold mb-2 text-yellow-400">アイデンティティ</h2>
+            <p className="text-slate-400 text-sm mb-3">
+              選手としての自分を言葉にしよう。「私は〇〇な選手だ」
+            </p>
+            <textarea
+              value={identity}
+              onChange={e => setIdentity(e.target.value)}
+              placeholder="例：諦めずにチームを鼓舞し続ける選手"
+              rows={3}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-yellow-500 transition-colors resize-none"
+            />
           </div>
 
           {/* Reflection */}
