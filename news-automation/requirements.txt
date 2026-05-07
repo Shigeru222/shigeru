@@ -1,0 +1,7 @@
+anthropic>=0.34.0
+feedparser>=6.0.11
+edge-tts>=6.1.12
+Pillow>=10.0.0
+google-api-python-client>=2.97.0
+google-auth-httplib2>=0.1.1
+google-auth-oauthlib>=1.1.0
