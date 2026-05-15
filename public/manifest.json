@@ -1,7 +1,7 @@
 {
-  "name": "漢字チャレンジ",
-  "short_name": "漢字チャレンジ",
-  "description": "小学2年生の漢字160字をたのしくおぼえよう",
+  "name": "小2 おべんきょうチャレンジ",
+  "short_name": "小2おべんきょう",
+  "description": "漢字160字と九九81問をたのしくおぼえよう",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

@@ -3,15 +3,15 @@ import "./globals.css";
 import InstallHint from "./InstallHint";
 
 export const metadata: Metadata = {
-  title: "かんじチャレンジ｜小学2年生の漢字をたのしくおぼえよう",
+  title: "小2 おべんきょうチャレンジ｜漢字＋九九をたのしくおぼえよう",
   description:
-    "小学2年生で習う160字の漢字を、クイズ・フラッシュカード・書き取りで楽しく学べる学習アプリ。",
+    "小学2年生で習う漢字160字と九九81問を、クイズ・書き取り・フラッシュカードで楽しく学べる学習アプリ。",
   manifest: "/manifest.json",
-  applicationName: "漢字チャレンジ",
+  applicationName: "小2 おべんきょう",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "漢字チャレンジ",
+    title: "小2 おべんきょう",
   },
   icons: {
     icon: [
