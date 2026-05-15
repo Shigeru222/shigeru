@@ -13,6 +13,11 @@ import {
   loadKukuProgress,
   kukuMasteredCount,
 } from "@/lib/kuku-storage";
+import {
+  loadMathProgress,
+  totalMathStars,
+  MAX_TOTAL_STARS,
+} from "@/lib/math-storage";
 
 const KANJI_TOTAL = KANJI_LIST.length;
 
@@ -20,6 +25,7 @@ export default function HomePage() {
   const [kanjiMastered, setKanjiMastered] = useState(0);
   const [kanjiLearning, setKanjiLearning] = useState(0);
   const [kukuMastered, setKukuMastered] = useState(0);
+  const [mathStars, setMathStars] = useState(0);
 
   useEffect(() => {
     const k = loadProgress();
@@ -27,10 +33,11 @@ export default function HomePage() {
     setKanjiLearning(kanjiLearningCount(k));
     const m = loadKukuProgress();
     setKukuMastered(kukuMasteredCount(m));
+    setMathStars(totalMathStars(loadMathProgress()));
   }, []);
 
-  const totalMastered = kanjiMastered + kukuMastered;
-  const totalCount = KANJI_TOTAL + KUKU_TOTAL;
+  const totalMastered = kanjiMastered + kukuMastered + mathStars;
+  const totalCount = KANJI_TOTAL + KUKU_TOTAL + MAX_TOTAL_STARS;
   const overallPct = Math.round((totalMastered / totalCount) * 100);
 
   return (
@@ -142,16 +149,50 @@ export default function HomePage() {
         <Section
           emoji="🔢"
           title="算数"
-          mastered={kukuMastered}
-          total={KUKU_TOTAL}
+          mastered={kukuMastered + mathStars}
+          total={KUKU_TOTAL + MAX_TOTAL_STARS}
         >
           <ModeCard
             href="/kuku"
             emoji="🧮"
-            title="九九チャレンジ"
+            title="九九"
             sub="2×3=？ を こたえよう"
             cls="btn-pink"
-            wide
+          />
+          <ModeCard
+            href="/tashizan"
+            emoji="➕"
+            title="たし算"
+            sub="3レベル に ちょうせん"
+            cls="btn-green"
+          />
+          <ModeCard
+            href="/hikizan"
+            emoji="➖"
+            title="ひき算"
+            sub="3レベル に ちょうせん"
+            cls="btn-blue"
+          />
+          <ModeCard
+            href="/jikoku"
+            emoji="🕐"
+            title="時こく"
+            sub="アナログとけいを よもう"
+            cls="btn-orange"
+          />
+          <ModeCard
+            href="/tani"
+            emoji="📏"
+            title="たんい"
+            sub="cm／m／L／dL の へんかん"
+            cls="btn-purple"
+          />
+          <ModeCard
+            href="/zukei"
+            emoji="🔺"
+            title="ずけい"
+            sub="三角形・四角形を しろう"
+            cls="btn-yellow"
           />
         </Section>
 

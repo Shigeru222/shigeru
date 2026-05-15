@@ -20,16 +20,29 @@ import {
   loadKukuProgress,
   resetKukuProgress,
 } from "@/lib/kuku-storage";
+import {
+  loadMathProgress,
+  resetMathProgress,
+  totalMathStars,
+  modeStars,
+  MAX_TOTAL_STARS,
+  MAX_STARS_PER_MODE,
+  MATH_MODES,
+  MODE_LABEL,
+  type AllMathProgress,
+} from "@/lib/math-storage";
 
 const KANJI_TOTAL = KANJI_LIST.length;
 
 export default function ProgressPage() {
   const [progress, setProgress] = useState<AllProgress>({});
   const [kuku, setKuku] = useState<KukuAllProgress>({});
+  const [math, setMath] = useState<AllMathProgress>({});
 
   useEffect(() => {
     setProgress(loadProgress());
     setKuku(loadKukuProgress());
+    setMath(loadMathProgress());
   }, []);
 
   // 全体集計
@@ -37,20 +50,26 @@ export default function ProgressPage() {
   const kLearning = kanjiLearningCount(progress);
   const mMastered = kukuMasteredCount(kuku);
   const mLearning = kukuLearningCount(kuku);
+  const mathStars = totalMathStars(math);
 
-  const totalMastered = kMastered + mMastered;
-  const totalCount = KANJI_TOTAL + KUKU_TOTAL;
+  const totalMastered = kMastered + mMastered + mathStars;
+  const totalCount = KANJI_TOTAL + KUKU_TOTAL + MAX_TOTAL_STARS;
   const totalLearning = kLearning + mLearning;
-  const totalRemaining = totalCount - totalMastered - totalLearning;
+  const totalRemaining = Math.max(
+    0,
+    totalCount - totalMastered - totalLearning,
+  );
   const overallPct = Math.round((totalMastered / totalCount) * 100);
 
   // 問題数・正答率
   const totalSeen =
     Object.values(progress).reduce((s, p) => s + p.seen, 0) +
-    Object.values(kuku).reduce((s, p) => s + p.seen, 0);
+    Object.values(kuku).reduce((s, p) => s + p.seen, 0) +
+    Object.values(math).reduce((s, p) => s + p.seen, 0);
   const totalCorrect =
     Object.values(progress).reduce((s, p) => s + p.correct, 0) +
-    Object.values(kuku).reduce((s, p) => s + p.correct, 0);
+    Object.values(kuku).reduce((s, p) => s + p.correct, 0) +
+    Object.values(math).reduce((s, p) => s + p.correct, 0);
   const accuracy = totalSeen ? Math.round((totalCorrect / totalSeen) * 100) : 0;
 
   const masteredKanji = KANJI_LIST.filter(
@@ -60,13 +79,15 @@ export default function ProgressPage() {
   function handleReset() {
     if (
       window.confirm(
-        "ほんとうに がくしゅうきろくを けしますか？\n（漢字も 九九も ぜんぶ けしますよ）",
+        "ほんとうに がくしゅうきろくを けしますか？\n（漢字・九九・算数チャレンジ ぜんぶ けしますよ）",
       )
     ) {
       resetProgress();
       resetKukuProgress();
+      resetMathProgress();
       setProgress({});
       setKuku({});
+      setMath({});
     }
   }
 
@@ -146,10 +167,10 @@ export default function ProgressPage() {
           )}
         </SubjectCard>
 
-        {/* 算数セクション */}
+        {/* 算数：九九 */}
         <SubjectCard
           emoji="🔢"
-          title="算数（九九）"
+          title="九九"
           mastered={mMastered}
           learning={mLearning}
           total={KUKU_TOTAL}
@@ -159,6 +180,44 @@ export default function ProgressPage() {
           </p>
           <KukuMiniGrid kuku={kuku} />
         </SubjectCard>
+
+        {/* 算数：チャレンジ系 */}
+        <section className="panel p-6 mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xl font-black flex items-center gap-2">
+              <span>🧠</span>算数チャレンジ
+            </h2>
+            <span className="chip badge-mastered">
+              {mathStars} / {MAX_TOTAL_STARS} ⭐
+            </span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            {MATH_MODES.map((m) => {
+              const stars = modeStars(math, m);
+              const lbl = MODE_LABEL[m];
+              return (
+                <div
+                  key={m}
+                  className="rounded-2xl border-[3px] border-[var(--ink)] p-3 text-center bg-white"
+                  style={{ boxShadow: "3px 3px 0 var(--ink)" }}
+                >
+                  <div className="text-2xl">{lbl.emoji}</div>
+                  <div className="text-sm font-black mt-1">{lbl.ja}</div>
+                  <div className="text-base mt-1">
+                    {Array.from({ length: MAX_STARS_PER_MODE }).map((_, i) => (
+                      <span key={i} className={i < stars ? "star-on" : "star-off"}>
+                        ⭐
+                      </span>
+                    ))}
+                  </div>
+                  <div className="text-xs font-bold text-[var(--ink-soft)] mt-1">
+                    {stars} / {MAX_STARS_PER_MODE}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
 
         <div className="text-center mt-8">
           <button onClick={handleReset} className="btn-pop btn-white text-sm py-2 px-4">
