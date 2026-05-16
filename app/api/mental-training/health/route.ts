@@ -6,34 +6,40 @@ export async function GET() {
 
   if (!url || !token) {
     return NextResponse.json({
+      step: 'env',
       status: 'error',
-      message: '環境変数が設定されていません',
       KV_REST_API_URL: url ? '設定済み' : '未設定',
       KV_REST_API_TOKEN: token ? '設定済み' : '未設定',
     });
   }
 
-  try {
-    const res = await fetch(url, {
+  async function cmd(command: unknown[]) {
+    const res = await fetch(url!, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(['PING']),
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(command),
       cache: 'no-store',
     });
-    const data = await res.json();
+    return res.json();
+  }
+
+  try {
+    // 1. PING
+    const ping = await cmd(['PING']);
+
+    // 2. 件数確認
+    const llen = await cmd(['LLEN', 'mental_training_submissions']);
+
+    // 3. 最新1件取得
+    const latest = await cmd(['LRANGE', 'mental_training_submissions', '0', '0']);
+
     return NextResponse.json({
       status: 'ok',
-      message: 'Upstash接続成功',
-      ping: data.result,
+      ping: ping.result,
+      登録件数: llen.result,
+      最新データ: latest.result?.[0] ? JSON.parse(latest.result[0]) : null,
     });
   } catch (err) {
-    return NextResponse.json({
-      status: 'error',
-      message: '接続失敗',
-      error: String(err),
-    });
+    return NextResponse.json({ status: 'error', error: String(err) });
   }
 }
