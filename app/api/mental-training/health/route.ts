@@ -37,8 +37,13 @@ export async function GET() {
   // 4. テストデータ削除
   await cmd(['DEL', testKey]);
 
-  // 5. 本番データのキー型確認
+  // 5. 本番データのキー型確認 → string型なら削除して修復
   const typeResult = await cmd(['TYPE', 'mental_training_submissions']);
+  let fixed = false;
+  if (typeResult.result === 'string') {
+    await cmd(['DEL', 'mental_training_submissions']);
+    fixed = true;
+  }
 
   // 6. 本番データ件数
   const llen = await cmd(['LLEN', 'mental_training_submissions']);
@@ -47,8 +52,9 @@ export async function GET() {
     ping: ping.result,
     write_test: pushResult,
     read_test: rangeResult,
-    key_type: typeResult,
-    count: llen,
+    key_type: typeResult.result,
+    key_fixed: fixed,
+    count: llen.result ?? 0,
     url_prefix: url.slice(0, 30),
   });
 }
