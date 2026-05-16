@@ -7,9 +7,9 @@ export async function GET() {
   if (!url || !token) {
     return NextResponse.json({
       step: 'env',
-      status: 'error',
-      KV_REST_API_URL: url ? '設定済み' : '未設定',
-      KV_REST_API_TOKEN: token ? '設定済み' : '未設定',
+      ok: false,
+      url: url ? 'set' : 'MISSING',
+      token: token ? 'set' : 'MISSING',
     });
   }
 
@@ -20,26 +20,31 @@ export async function GET() {
       body: JSON.stringify(command),
       cache: 'no-store',
     });
-    return res.json();
+    const text = await res.text();
+    try { return JSON.parse(text); } catch { return { raw: text }; }
   }
 
-  try {
-    // 1. PING
-    const ping = await cmd(['PING']);
+  // 1. PING
+  const ping = await cmd(['PING']);
 
-    // 2. 件数確認
-    const llen = await cmd(['LLEN', 'mental_training_submissions']);
+  // 2. テスト書き込み
+  const testKey = 'health_test';
+  const pushResult = await cmd(['LPUSH', testKey, 'test_value']);
 
-    // 3. 最新1件取得
-    const latest = await cmd(['LRANGE', 'mental_training_submissions', '0', '0']);
+  // 3. テスト読み込み
+  const rangeResult = await cmd(['LRANGE', testKey, '0', '-1']);
 
-    return NextResponse.json({
-      status: 'ok',
-      ping: ping.result,
-      登録件数: llen.result,
-      最新データ: latest.result?.[0] ? JSON.parse(latest.result[0]) : null,
-    });
-  } catch (err) {
-    return NextResponse.json({ status: 'error', error: String(err) });
-  }
+  // 4. テストデータ削除
+  await cmd(['DEL', testKey]);
+
+  // 5. 本番データ件数
+  const llen = await cmd(['LLEN', 'mental_training_submissions']);
+
+  return NextResponse.json({
+    ping: ping.result,
+    write_test: pushResult.result,
+    read_test: rangeResult.result,
+    count: llen.result,
+    url_prefix: url.slice(0, 30),
+  });
 }

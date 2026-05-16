@@ -14,7 +14,11 @@ async function upstashCommand(command: unknown[]): Promise<{ result: unknown }> 
     body: JSON.stringify(command),
     cache: 'no-store',
   });
-  return res.json();
+  const text = await res.text();
+  let data: { result?: unknown; error?: string };
+  try { data = JSON.parse(text); } catch { throw new Error(`Upstash non-JSON response: ${text.slice(0, 200)}`); }
+  if (data.error) throw new Error(`Upstash error: ${data.error}`);
+  return data as { result: unknown };
 }
 
 // LRANGE: 全件取得（LPUSHで追加しているので最新順）
