@@ -37,14 +37,18 @@ export async function GET() {
   // 4. テストデータ削除
   await cmd(['DEL', testKey]);
 
-  // 5. 本番データ件数
+  // 5. 本番データのキー型確認
+  const typeResult = await cmd(['TYPE', 'mental_training_submissions']);
+
+  // 6. 本番データ件数
   const llen = await cmd(['LLEN', 'mental_training_submissions']);
 
   return NextResponse.json({
     ping: ping.result,
     write_test: pushResult,
     read_test: rangeResult,
-    count: llen.result,
+    key_type: typeResult,
+    count: llen,
     url_prefix: url.slice(0, 30),
   });
 }
