@@ -42,8 +42,8 @@ export async function GET() {
 
   return NextResponse.json({
     ping: ping.result,
-    write_test: pushResult.result,
-    read_test: rangeResult.result,
+    write_test: pushResult,
+    read_test: rangeResult,
     count: llen.result,
     url_prefix: url.slice(0, 30),
   });
