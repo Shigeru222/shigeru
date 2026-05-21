@@ -17,7 +17,7 @@ export interface CandidateStock {
 
 export const CANDIDATE_STOCKS: CandidateStock[] = [
   // ────────────────────────────────────────
-  // AI・半導体
+  // AI・半導体 (ai-semiconductor)
   // ────────────────────────────────────────
   {
     ticker: '6857.T',
@@ -32,7 +32,7 @@ export const CANDIDATE_STOCKS: CandidateStock[] = [
     ticker: '8035.T',
     name: '東京エレクトロン',
     themes: [
-      { themeId: 'ai-semiconductor', benefitType: 'primary', reason: '半導体製造装置国内最大手' },
+      { themeId: 'ai-semiconductor', benefitType: 'primary', reason: '半導体製造装置の国内最大手' },
       { themeId: 'economic-security', benefitType: 'secondary', reason: '国内半導体製造装置供給の要' },
     ],
     sector: '電気機器',
@@ -211,9 +211,19 @@ export const CANDIDATE_STOCKS: CandidateStock[] = [
     sector: '電気機器',
     marketCapTier: 'large',
   },
+  {
+    ticker: '4062.T',
+    name: 'イビデン',
+    themes: [
+      { themeId: 'ai-semiconductor', benefitType: 'primary', reason: 'AI半導体向け高密度パッケージ基板' },
+      { themeId: 'defense', benefitType: 'secondary', reason: '高機能プリント基板が防衛電子に利用' },
+    ],
+    sector: '電気機器',
+    marketCapTier: 'large',
+  },
 
   // ────────────────────────────────────────
-  // GX（グリーン・トランスフォーメーション）
+  // GX（グリーン・トランスフォーメーション）(gx)
   // ────────────────────────────────────────
   {
     ticker: '6501.T',
@@ -312,11 +322,20 @@ export const CANDIDATE_STOCKS: CandidateStock[] = [
     marketCapTier: 'large',
   },
   {
+    ticker: '6703.T',
+    name: 'OKIエンジニアリング',
+    themes: [
+      { themeId: 'gx', benefitType: 'enabler', reason: '再エネ機器の信頼性試験・計測' },
+    ],
+    sector: '電気機器',
+    marketCapTier: 'small',
+  },
+  {
     ticker: '1605.T',
     name: 'INPEX',
     themes: [
       { themeId: 'gx', benefitType: 'secondary', reason: 'LNG・水素の安定供給でGX移行支援' },
-      { themeId: 'economic-security', benefitType: 'primary', reason: '海外資源権益確保で食料・エネルギー安保' },
+      { themeId: 'economic-security', benefitType: 'primary', reason: '海外資源権益確保でエネルギー安保' },
     ],
     sector: '石油・石炭製品',
     marketCapTier: 'large',
@@ -350,15 +369,6 @@ export const CANDIDATE_STOCKS: CandidateStock[] = [
     marketCapTier: 'large',
   },
   {
-    ticker: '6703.T',
-    name: 'OKIエンジニアリング',
-    themes: [
-      { themeId: 'gx', benefitType: 'enabler', reason: '再エネ機器の信頼性試験・計測' },
-    ],
-    sector: '電気機器',
-    marketCapTier: 'small',
-  },
-  {
     ticker: '5401.T',
     name: '日本製鉄',
     themes: [
@@ -370,7 +380,7 @@ export const CANDIDATE_STOCKS: CandidateStock[] = [
   },
 
   // ────────────────────────────────────────
-  // 防衛・安全保障
+  // 防衛・安全保障 (defense)
   // ────────────────────────────────────────
   {
     ticker: '7013.T',
@@ -462,16 +472,6 @@ export const CANDIDATE_STOCKS: CandidateStock[] = [
     marketCapTier: 'large',
   },
   {
-    ticker: '4062.T',
-    name: 'イビデン',
-    themes: [
-      { themeId: 'defense', benefitType: 'secondary', reason: '高機能プリント基板が防衛電子に利用' },
-      { themeId: 'ai-semiconductor', benefitType: 'primary', reason: 'AI半導体向け高密度パッケージ基板' },
-    ],
-    sector: '電気機器',
-    marketCapTier: 'large',
-  },
-  {
     ticker: '6503.T',
     name: '三菱電機',
     themes: [
@@ -493,7 +493,7 @@ export const CANDIDATE_STOCKS: CandidateStock[] = [
   },
 
   // ────────────────────────────────────────
-  // デジタル・行政DX
+  // デジタル・行政DX (digital-gov)
   // ────────────────────────────────────────
   {
     ticker: '3626.T',
@@ -624,9 +624,19 @@ export const CANDIDATE_STOCKS: CandidateStock[] = [
     sector: '情報・通信業',
     marketCapTier: 'large',
   },
+  {
+    ticker: '6890.T',
+    name: 'フェローテックHD',
+    themes: [
+      { themeId: 'digital-gov', benefitType: 'enabler', reason: '半導体製造装置部品・電子部品供給' },
+      { themeId: 'ai-semiconductor', benefitType: 'secondary', reason: '半導体製造プロセス部品供給' },
+    ],
+    sector: '電気機器',
+    marketCapTier: 'small',
+  },
 
   // ────────────────────────────────────────
-  // 医療・介護・ヘルスケア
+  // 医療・介護・ヘルスケア (healthcare)
   // ────────────────────────────────────────
   {
     ticker: '4502.T',
@@ -756,15 +766,18 @@ export const CANDIDATE_STOCKS: CandidateStock[] = [
     marketCapTier: 'mid',
   },
   {
-    ticker: '7011.T',
-    name: '三菱重工業',
-    themes: [],  // 既にgx/defenseで定義済み
-    sector: '機械',
-    marketCapTier: 'large',
+    ticker: '7762.T',
+    name: 'シチズン時計',
+    themes: [
+      { themeId: 'defense', benefitType: 'secondary', reason: '精密機械加工技術が防衛部品に応用' },
+      { themeId: 'healthcare', benefitType: 'secondary', reason: '医療機器用精密部品の製造' },
+    ],
+    sector: '精密機器',
+    marketCapTier: 'mid',
   },
 
   // ────────────────────────────────────────
-  // 少子化対策・子育て支援
+  // 少子化対策・子育て支援 (childcare)
   // ────────────────────────────────────────
   {
     ticker: '2181.T',
@@ -895,7 +908,7 @@ export const CANDIDATE_STOCKS: CandidateStock[] = [
   },
 
   // ────────────────────────────────────────
-  // 観光・インバウンド
+  // 観光・インバウンド (tourism)
   // ────────────────────────────────────────
   {
     ticker: '9603.T',
@@ -1020,7 +1033,7 @@ export const CANDIDATE_STOCKS: CandidateStock[] = [
     name: 'ソニーグループ',
     themes: [
       { themeId: 'tourism', benefitType: 'secondary', reason: 'アニメ・コンテンツIPがインバウンド誘引' },
-      { themeId: 'ai-semiconductor', benefitType: 'secondary', reason: 'イメージセンサーでAI・スマートフォン市場' },
+      { themeId: 'ai-semiconductor', benefitType: 'secondary', reason: 'イメージセンサーでAI・半導体市場' },
     ],
     sector: '電気機器',
     marketCapTier: 'large',
@@ -1036,7 +1049,7 @@ export const CANDIDATE_STOCKS: CandidateStock[] = [
   },
 
   // ────────────────────────────────────────
-  // 経済安全保障
+  // 経済安全保障 (economic-security)
   // ────────────────────────────────────────
   {
     ticker: '6479.T',
@@ -1104,22 +1117,19 @@ export const CANDIDATE_STOCKS: CandidateStock[] = [
   },
 ]
 
-// 三菱重工業は複数テーマに登場するので、統合エントリーとして正規化
-// CANDIDATE_STOCKS内の三菱重工業の空themesエントリを削除し、
-// 正規化済みの単一エントリを保証するため、重複tickerをマージした最終リストを生成
-
-function mergeDuplicates(stocks: CandidateStock[]): CandidateStock[] {
+/**
+ * 同一tickerが複数回定義されている場合にthemesをマージして重複エントリを除去します。
+ * CANDIDATE_STOCKSは可読性のためにテーマ別に記述されているため、
+ * 同一企業が複数テーマに登場することがあります。
+ */
+function mergeDuplicateTickers(stocks: CandidateStock[]): CandidateStock[] {
   const map = new Map<string, CandidateStock>()
 
   for (const stock of stocks) {
-    // 空themesのダミーエントリはスキップ
-    if (stock.themes.length === 0) continue
-
     const existing = map.get(stock.ticker)
     if (!existing) {
       map.set(stock.ticker, { ...stock, themes: [...stock.themes] })
     } else {
-      // themeIdの重複を避けてマージ
       const existingThemeIds = new Set(existing.themes.map(t => t.themeId))
       for (const theme of stock.themes) {
         if (!existingThemeIds.has(theme.themeId)) {
@@ -1133,30 +1143,22 @@ function mergeDuplicates(stocks: CandidateStock[]): CandidateStock[] {
   return Array.from(map.values())
 }
 
-// 三菱重工業の正規エントリー（全テーマをまとめて定義）
-const MITSUBISHI_HEAVY: CandidateStock = {
-  ticker: '7011.T',
-  name: '三菱重工業',
-  themes: [
-    { themeId: 'gx', benefitType: 'primary', reason: 'ガスタービン・水素発電インフラ' },
-    { themeId: 'defense', benefitType: 'primary', reason: '戦闘機・艦艇・ミサイル主要メーカー' },
-  ],
-  sector: '機械',
-  marketCapTier: 'large',
-}
+/** 重複tickerをマージ済みのマスターリスト */
+export const CANDIDATE_STOCKS_MERGED: CandidateStock[] = mergeDuplicateTickers(CANDIDATE_STOCKS)
 
-// 重複除去前の生データ（MITSUBISHI_HEAVYの空エントリを排除）
-const RAW_STOCKS = CANDIDATE_STOCKS.filter(s => s.ticker !== '7011.T')
-RAW_STOCKS.push(MITSUBISHI_HEAVY)
-
-export const CANDIDATE_STOCKS_MERGED: CandidateStock[] = mergeDuplicates(RAW_STOCKS)
-
+/**
+ * 指定テーマIDに関連する銘柄を返します。
+ */
 export function getCandidatesByTheme(themeId: string): CandidateStock[] {
   return CANDIDATE_STOCKS_MERGED.filter(stock =>
     stock.themes.some(t => t.themeId === themeId)
   )
 }
 
+/**
+ * 指定テーマIDのいずれかに関連する銘柄を返します。
+ * themeIds が空の場合は全銘柄を返します。
+ */
 export function getCandidatesByThemes(themeIds: string[]): CandidateStock[] {
   if (themeIds.length === 0) return CANDIDATE_STOCKS_MERGED
   const idSet = new Set(themeIds)
