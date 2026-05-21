@@ -12,7 +12,9 @@ import {
   Calendar,
 } from 'lucide-react'
 import { POLICY_THEMES } from '@/lib/stock/policies'
+import { MARKET_RESEARCH } from '@/lib/stock/market-research'
 import { PolicyTheme } from '@/lib/stock/types'
+import { MarketResearch } from '@/lib/stock/market-research'
 
 interface SearchResult {
   ticker: string
@@ -32,7 +34,15 @@ const colorMap: Record<string, { border: string; bg: string; badge: string; icon
   yellow: { border: 'border-yellow-500/40', bg: 'from-yellow-900/20 to-yellow-800/10',badge: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',icon: 'text-yellow-400' },
 }
 
-function ThemeCard({ theme, onStockClick }: { theme: PolicyTheme; onStockClick: (ticker: string) => void }) {
+function ThemeCard({
+  theme,
+  market,
+  onStockClick,
+}: {
+  theme: PolicyTheme
+  market?: MarketResearch
+  onStockClick: (ticker: string) => void
+}) {
   const colors = colorMap[theme.color]
   return (
     <div
@@ -49,6 +59,24 @@ function ThemeCard({ theme, onStockClick }: { theme: PolicyTheme; onStockClick: 
 
       {/* Description */}
       <p className="text-slate-300 text-xs leading-relaxed">{theme.description}</p>
+
+      {/* Market data */}
+      {market && (
+        <div className="rounded-lg bg-black/20 p-3 space-y-1.5 text-xs">
+          <div className="flex justify-between gap-2">
+            <span className="text-slate-500">国内市場規模</span>
+            <span className="text-slate-200 text-right">{market.marketSize.japan}</span>
+          </div>
+          <div className="flex justify-between gap-2">
+            <span className="text-slate-500">成長率(CAGR)</span>
+            <span className={`text-right font-medium ${colors.icon}`}>{market.growth.cagr.split('、')[0]}</span>
+          </div>
+          <div className="flex justify-between gap-2">
+            <span className="text-slate-500">政府支援規模</span>
+            <span className="text-slate-200 text-right">{market.govSupport.totalBudget}</span>
+          </div>
+        </div>
+      )}
 
       {/* Keywords */}
       <div className="flex flex-wrap gap-1.5">
@@ -310,6 +338,7 @@ export default function StockPage() {
               <ThemeCard
                 key={theme.id}
                 theme={theme}
+                market={MARKET_RESEARCH.find(m => m.themeId === theme.id)}
                 onStockClick={navigateToStock}
               />
             ))}

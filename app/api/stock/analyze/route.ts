@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { POLICY_THEMES } from '@/lib/stock/policies'
 import { getAllThemeContinuity } from '@/lib/stock/historical-policies'
+import { getAllMarketResearch } from '@/lib/stock/market-research'
 
 const client = new Anthropic()
 
@@ -11,11 +12,20 @@ export async function POST(request: NextRequest) {
 
   const continuity = getAllThemeContinuity()
   const continuityMap = Object.fromEntries(continuity.map(c => [c.themeId, c]))
+  const marketResearch = getAllMarketResearch()
+  const marketMap = Object.fromEntries(marketResearch.map(m => [m.themeId, m]))
 
   const themesOverview = POLICY_THEMES.map(t => {
     const c = continuityMap[t.id]
+    const m = marketMap[t.id]
     const momentumLabel = c?.recentMomentum === 'accelerating' ? '⬆加速中' : c?.recentMomentum === 'declining' ? '⬇減速' : '→安定'
-    return `- ${t.title} (id: ${t.id}): ${t.description}\n  継続年数:${c?.continuousYears ?? 0}年 モメンタム:${momentumLabel} 最高優先度:${c?.maxPriority ?? 'none'}`
+    return [
+      `- ${t.title} (id: ${t.id})`,
+      `  政策: 継続${c?.continuousYears ?? 0}年 モメンタム:${momentumLabel} 優先度:${c?.maxPriority ?? 'none'}`,
+      m ? `  市場規模(国内):${m.marketSize.japan} CAGR:${m.growth.cagr}` : '',
+      m ? `  政府支援: ${m.govSupport.totalBudget}` : '',
+      m ? `  戦略的意義: ${m.significance.strategicReason.substring(0, 80)}` : '',
+    ].filter(Boolean).join('\n')
   }).join('\n')
 
   const prompt = `あなたは株式投資の専門家アナリストです。以下の企業を「日本政府の骨太の方針2001〜2024年（20年以上の歴史的文脈）」に照らして分析し、国策銘柄としての中長期的な将来性を評価してください。

@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, TrendingUp, TrendingDown, Minus, Calendar, BarChart3, Flame, ChevronDown, ChevronUp } from 'lucide-react'
+import { ArrowLeft, TrendingUp, TrendingDown, Minus, Calendar, BarChart3, Flame, ChevronDown, ChevronUp, Globe } from 'lucide-react'
 import { AnnualPolicyEntry } from '@/lib/stock/historical-policies'
 import { PolicyContinuity } from '@/lib/stock/types'
 import { POLICY_THEMES } from '@/lib/stock/policies'
+import { MARKET_RESEARCH, MarketResearch } from '@/lib/stock/market-research'
 
 const THEME_COLOR_MAP: Record<string, string> = {
   'ai-semiconductor': 'blue',
@@ -75,6 +76,7 @@ export default function PolicyHistoryPage() {
   const reversedPolicies = [...data.policies].reverse()
 
   const themeMap = Object.fromEntries(POLICY_THEMES.map(t => [t.id, t]))
+  const marketMap = Object.fromEntries(MARKET_RESEARCH.map(m => [m.themeId, m]))
 
   return (
     <main className="min-h-screen px-4 py-8">
@@ -239,6 +241,65 @@ export default function PolicyHistoryPage() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+
+        {/* Market Research Section */}
+        <div>
+          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <Globe className="w-5 h-5 text-green-400" />
+            テーマ別 市場調査データ（銘柄選定の基礎情報）
+          </h2>
+          <div className="space-y-3">
+            {sortedContinuity.map(c => {
+              const theme = themeMap[c.themeId]
+              const market = marketMap[c.themeId] as MarketResearch | undefined
+              if (!theme || !market) return null
+              const color = THEME_COLOR_MAP[c.themeId] || 'blue'
+              const colors = COLOR_CLASSES[color]
+              return (
+                <div key={c.themeId} className={`glass rounded-xl border ${colors.border} overflow-hidden`}>
+                  <div className="p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-xl">{theme.icon}</span>
+                      <span className="font-bold text-white">{theme.title}</span>
+                      <MomentumBadge momentum={c.recentMomentum} />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm mb-3">
+                      <div className="rounded-lg bg-black/20 p-3">
+                        <div className="text-slate-500 text-xs mb-1">国内市場規模</div>
+                        <div className="text-white font-medium text-xs leading-relaxed">{market.marketSize.japan}</div>
+                      </div>
+                      <div className="rounded-lg bg-black/20 p-3">
+                        <div className="text-slate-500 text-xs mb-1">成長率・予測</div>
+                        <div className={`font-medium text-xs leading-relaxed ${colors.text}`}>{market.growth.cagr}</div>
+                        <div className="text-slate-400 text-xs mt-1">{market.growth.projectedSize}</div>
+                      </div>
+                      <div className="rounded-lg bg-black/20 p-3">
+                        <div className="text-slate-500 text-xs mb-1">政府支援規模</div>
+                        <div className="text-white font-bold text-xs">{market.govSupport.totalBudget}</div>
+                      </div>
+                    </div>
+                    <div className="text-xs text-slate-400 leading-relaxed border-t border-white/5 pt-3">
+                      <span className="text-slate-300 font-medium">戦略的意義: </span>
+                      {market.significance.strategicReason}
+                    </div>
+                    <div className="mt-2 text-xs">
+                      <span className={`font-medium ${colors.text}`}>投資ポイント: </span>
+                      <span className="text-slate-300">{market.investmentHighlight}</span>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {market.govSupport.keyPrograms.map(p => (
+                        <div key={p.name} className={`text-xs px-2 py-1 rounded-lg ${colors.badge}`}>
+                          <span className="font-medium">{p.name}</span>
+                          <span className="ml-1 opacity-80">{p.amount}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
 
