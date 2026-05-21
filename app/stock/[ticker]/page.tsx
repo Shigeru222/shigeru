@@ -17,8 +17,11 @@ import {
   Users,
   Building2,
   Target,
+  Lightbulb,
+  Globe,
+  Zap,
 } from 'lucide-react'
-import { PolicyAnalysis, HistoricalPrice, CompanyDetail } from '@/lib/stock/types'
+import { PolicyAnalysis, HistoricalPrice, CompanyDetail, BusinessAnalysis } from '@/lib/stock/types'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface QuoteData {
@@ -296,6 +299,10 @@ export default function StockDetailPage() {
   const [detail, setDetail] = useState<CompanyDetail | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
 
+  const [bizAnalysis, setBizAnalysis] = useState<BusinessAnalysis | null>(null)
+  const [bizLoading, setBizLoading] = useState(false)
+  const [bizError, setBizError] = useState<string | null>(null)
+
   // Fetch quote
   useEffect(() => {
     async function fetchQuote() {
@@ -351,7 +358,41 @@ export default function StockDetailPage() {
     fetchDetail()
   }, [ticker])
 
-  // Analyze
+  // Business analysis
+  async function handleBizAnalyze() {
+    if (!quote) return
+    setBizLoading(true)
+    setBizError(null)
+    setBizAnalysis(null)
+    try {
+      const res = await fetch('/api/stock/business-analysis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ticker: quote.ticker,
+          companyName: quote.name,
+          sector: quote.sector,
+          industry: quote.industry,
+          description: quote.description,
+          employees: detail?.companyProfile.employees,
+          marketCap: quote.marketCap,
+          revenueGrowth: detail?.additionalMetrics.revenueGrowth,
+          operatingMargins: detail?.additionalMetrics.operatingMargins,
+          website: quote.website,
+        }),
+      })
+      if (!res.ok) throw new Error('分析に失敗しました')
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
+      setBizAnalysis(data)
+    } catch (e) {
+      setBizError(e instanceof Error ? e.message : '分析エラー')
+    } finally {
+      setBizLoading(false)
+    }
+  }
+
+  // Policy analyze
   async function handleAnalyze() {
     if (!quote) return
     setAnalysisLoading(true)
@@ -567,6 +608,186 @@ export default function StockDetailPage() {
                 </p>
               </div>
             )}
+
+            {/* Business deep-dive analysis */}
+            <div className="glass rounded-2xl p-5">
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="w-5 h-5 text-yellow-400" />
+                  <h2 className="text-white font-bold">事業詳細分析</h2>
+                  <span className="text-xs text-slate-500">社会課題・価値提供・競争優位</span>
+                </div>
+                {!bizAnalysis && !bizLoading && (
+                  <button onClick={handleBizAnalyze} className="btn-primary px-4 py-2 text-sm flex items-center gap-1.5">
+                    <Lightbulb className="w-4 h-4" />
+                    分析する
+                  </button>
+                )}
+                {bizAnalysis && (
+                  <button onClick={handleBizAnalyze} className="flex items-center gap-1.5 text-slate-400 hover:text-white text-xs transition-colors">
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    再分析
+                  </button>
+                )}
+              </div>
+
+              {bizLoading && (
+                <div className="flex flex-col items-center gap-4 py-10">
+                  <div className="relative">
+                    <Loader2 className="w-10 h-10 text-yellow-400 animate-spin" />
+                    <Lightbulb className="w-4 h-4 text-yellow-300 absolute -top-1 -right-1 animate-pulse" />
+                  </div>
+                  <p className="text-slate-400 text-sm">事業の本質を分析中...</p>
+                </div>
+              )}
+
+              {bizError && !bizLoading && (
+                <div className="flex items-center gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20">
+                  <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
+                  <p className="text-red-300 text-sm">{bizError}</p>
+                </div>
+              )}
+
+              {!bizAnalysis && !bizLoading && !bizError && (
+                <div className="text-center py-8">
+                  <Lightbulb className="w-10 h-10 text-yellow-400/30 mx-auto mb-3" />
+                  <p className="text-slate-400 text-sm">
+                    「分析する」で社会課題・価値提供・競争優位を AI が深掘りします
+                  </p>
+                </div>
+              )}
+
+              {bizAnalysis && !bizLoading && (
+                <div className="space-y-6">
+                  {/* One-liner & type */}
+                  <div className="rounded-xl bg-yellow-500/10 border border-yellow-500/20 p-4">
+                    <p className="text-xs text-yellow-400/70 mb-1">{bizAnalysis.businessType}</p>
+                    <p className="text-white font-bold text-base leading-relaxed">
+                      &ldquo;{bizAnalysis.oneLiner}&rdquo;
+                    </p>
+                  </div>
+
+                  {/* Social challenges */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Globe className="w-4 h-4 text-red-400" />
+                      <p className="text-slate-300 text-sm font-bold">解決する社会課題</p>
+                    </div>
+                    <div className="space-y-2">
+                      {bizAnalysis.socialChallenges?.map((sc, i) => {
+                        const severityCfg = {
+                          critical: { label: '深刻',   bg: 'bg-red-500/10',    border: 'border-red-500/25',    text: 'text-red-300' },
+                          high:     { label: '重要',   bg: 'bg-orange-500/10', border: 'border-orange-500/25', text: 'text-orange-300' },
+                          medium:   { label: '中程度', bg: 'bg-blue-500/10',   border: 'border-blue-500/25',   text: 'text-blue-300' },
+                        }
+                        const cfg = severityCfg[sc.severity] || severityCfg.medium
+                        return (
+                          <div key={i} className={`rounded-xl p-4 border ${cfg.bg} ${cfg.border}`}>
+                            <div className="flex items-center gap-2 mb-1.5">
+                              <span className="text-white font-bold text-sm">{sc.challenge}</span>
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${cfg.bg} ${cfg.text} border ${cfg.border}`}>
+                                {cfg.label}
+                              </span>
+                            </div>
+                            <p className="text-slate-300 text-xs leading-relaxed">{sc.description}</p>
+                            {sc.scale && (
+                              <p className="text-slate-500 text-xs mt-1">📊 {sc.scale}</p>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Solution approach */}
+                  <div className="rounded-xl glass-strong p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Zap className="w-4 h-4 text-cyan-400" />
+                      <p className="text-slate-300 text-sm font-bold">解決アプローチ</p>
+                    </div>
+                    <p className="text-slate-300 text-sm leading-relaxed">{bizAnalysis.solutionApproach}</p>
+                  </div>
+
+                  {/* Value propositions */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Target className="w-4 h-4 text-green-400" />
+                      <p className="text-slate-300 text-sm font-bold">提供価値</p>
+                    </div>
+                    <div className="space-y-3">
+                      {bizAnalysis.valuePropositions?.map((vp, i) => {
+                        const bmColor: Record<string, string> = {
+                          BtoC:   'bg-green-500/15 text-green-300 border-green-500/25',
+                          BtoB:   'bg-blue-500/15 text-blue-300 border-blue-500/25',
+                          BtoB2C: 'bg-purple-500/15 text-purple-300 border-purple-500/25',
+                          BtoG:   'bg-orange-500/15 text-orange-300 border-orange-500/25',
+                          'その他': 'bg-slate-500/15 text-slate-300 border-slate-500/25',
+                        }
+                        const bmCls = bmColor[vp.businessModel] || bmColor['その他']
+                        return (
+                          <div key={i} className="glass-strong rounded-xl p-4">
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                              <div>
+                                <span className={`text-xs px-2 py-0.5 rounded-full border ${bmCls} mr-2`}>
+                                  {vp.businessModel}
+                                </span>
+                                <span className="text-white font-bold text-sm">{vp.target}</span>
+                              </div>
+                            </div>
+                            <p className="text-cyan-300 text-sm font-medium mb-2">{vp.coreValue}</p>
+                            <ul className="space-y-1 mb-3">
+                              {vp.specificBenefits?.map((b, j) => (
+                                <li key={j} className="flex items-start gap-2">
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-green-400 shrink-0 mt-0.5" />
+                                  <span className="text-slate-300 text-xs">{b}</span>
+                                </li>
+                              ))}
+                            </ul>
+                            <div className="pt-2 border-t border-white/5">
+                              <span className="text-xs text-slate-500">差別化: </span>
+                              <span className="text-xs text-slate-300">{vp.differentiator}</span>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Moat */}
+                  <div className="rounded-xl glass-strong p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CheckCircle2 className="w-4 h-4 text-purple-400" />
+                      <p className="text-slate-300 text-sm font-bold">競争優位（経済的堀）</p>
+                    </div>
+                    <p className="text-slate-300 text-sm leading-relaxed">{bizAnalysis.moat}</p>
+                  </div>
+
+                  {/* Growth catalysts */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <TrendingUp className="w-4 h-4 text-emerald-400" />
+                      <p className="text-slate-300 text-sm font-bold">今後の成長トリガー</p>
+                    </div>
+                    <div className="space-y-2">
+                      {bizAnalysis.growthCatalysts?.map((cat, i) => (
+                        <div key={i} className="flex items-start gap-2.5">
+                          <span className="text-emerald-400 font-bold text-sm shrink-0">{i + 1}.</span>
+                          <p className="text-slate-200 text-sm">{cat}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* ESG */}
+                  {bizAnalysis.esgHighlights && (
+                    <div className="rounded-xl bg-teal-500/10 border border-teal-500/20 p-3">
+                      <span className="text-xs text-teal-400 font-medium">ESG・サステナビリティ: </span>
+                      <span className="text-xs text-slate-300">{bizAnalysis.esgHighlights}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Shareholder composition */}
             {detailLoading ? (
