@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import yahooFinance from 'yahoo-finance2'
+import YahooFinance from 'yahoo-finance2'
+
+const yf = new YahooFinance()
 
 export async function GET(request: NextRequest) {
   const ticker = request.nextUrl.searchParams.get('ticker')
@@ -16,7 +18,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const { startDate } = periodMap[period] || periodMap['3m']
-    const history = await yahooFinance.historical(ticker, {
+    const history = await yf.historical(ticker, {
       period1: startDate,
       interval: period === '3y' ? '1wk' : '1d',
     })

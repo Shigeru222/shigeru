@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import yahooFinance from 'yahoo-finance2'
+import YahooFinance from 'yahoo-finance2'
+
+const yf = new YahooFinance()
 
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get('q')
   if (!query) return NextResponse.json({ results: [] })
 
   try {
-    const results = await yahooFinance.search(query, {
+    const results = await yf.search(query, {
       newsCount: 0,
       quotesCount: 10,
     })

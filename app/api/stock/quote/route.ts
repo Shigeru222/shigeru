@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import yahooFinance from 'yahoo-finance2'
+import YahooFinance from 'yahoo-finance2'
+
+const yf = new YahooFinance()
 
 export async function GET(request: NextRequest) {
   const ticker = request.nextUrl.searchParams.get('ticker')
@@ -7,8 +9,8 @@ export async function GET(request: NextRequest) {
 
   try {
     const [quote, summary] = await Promise.all([
-      yahooFinance.quote(ticker),
-      yahooFinance.quoteSummary(ticker, {
+      yf.quote(ticker),
+      yf.quoteSummary(ticker, {
         modules: ['summaryDetail', 'defaultKeyStatistics', 'financialData', 'assetProfile']
       }).catch(() => null)
     ])
