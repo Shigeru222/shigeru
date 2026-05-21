@@ -34,6 +34,15 @@ export interface PolicyTheme {
   representativeStocks: { ticker: string; name: string; reason: string }[]
 }
 
+export interface PolicyContinuity {
+  themeId: string
+  continuousYears: number
+  totalScore: number
+  maxPriority: 'top' | 'high' | 'medium' | 'none'
+  recentMomentum: 'accelerating' | 'stable' | 'declining'
+  avgScore: number
+}
+
 export interface PolicyAnalysis {
   ticker: string
   companyName: string

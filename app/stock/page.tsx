@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Loader2,
   Star,
+  Calendar,
 } from 'lucide-react'
 import { POLICY_THEMES } from '@/lib/stock/policies'
 import { PolicyTheme } from '@/lib/stock/types'
@@ -208,6 +209,26 @@ export default function StockPage() {
             骨太の方針 2024/2025 に基づく政策テーマ別銘柄を AI が分析。
             東証上場銘柄の将来性を多角的に評価します。
           </p>
+        </div>
+
+        {/* 20-year policy history banner */}
+        <div
+          className="glass rounded-xl p-4 mb-8 border border-purple-400/20 flex items-center justify-between gap-4 cursor-pointer hover:border-purple-400/40 transition-colors group"
+          onClick={() => router.push('/stock/history')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={e => e.key === 'Enter' && router.push('/stock/history')}
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-purple-400/10 rounded-lg">
+              <Calendar className="w-5 h-5 text-purple-400" />
+            </div>
+            <div>
+              <div className="font-bold text-white text-sm">骨太の方針 20年史（2001〜2024年）</div>
+              <div className="text-xs text-slate-400">過去20年間の国策テーマ変遷・優先度ヒートマップ・政策継続性ランキングを分析の土台として提供</div>
+            </div>
+          </div>
+          <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-purple-400 transition-colors shrink-0" />
         </div>
 
         {/* Search bar */}

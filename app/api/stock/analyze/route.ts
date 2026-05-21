@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { POLICY_THEMES } from '@/lib/stock/policies'
+import { getAllThemeContinuity } from '@/lib/stock/historical-policies'
 
 const client = new Anthropic()
 
@@ -8,11 +9,22 @@ export async function POST(request: NextRequest) {
   const body = await request.json()
   const { ticker, companyName, sector, industry, description, per, pbr, roe, marketCap } = body
 
-  const themesOverview = POLICY_THEMES.map(t =>
-    `- ${t.title} (id: ${t.id}): ${t.description} (キーワード: ${t.keywords.join(', ')})`
-  ).join('\n')
+  const continuity = getAllThemeContinuity()
+  const continuityMap = Object.fromEntries(continuity.map(c => [c.themeId, c]))
 
-  const prompt = `あなたは株式投資の専門家アナリストです。以下の企業を日本政府の骨太の方針2024/2025に照らして分析し、国策銘柄としての将来性を評価してください。
+  const themesOverview = POLICY_THEMES.map(t => {
+    const c = continuityMap[t.id]
+    const momentumLabel = c?.recentMomentum === 'accelerating' ? '⬆加速中' : c?.recentMomentum === 'declining' ? '⬇減速' : '→安定'
+    return `- ${t.title} (id: ${t.id}): ${t.description}\n  継続年数:${c?.continuousYears ?? 0}年 モメンタム:${momentumLabel} 最高優先度:${c?.maxPriority ?? 'none'}`
+  }).join('\n')
+
+  const prompt = `あなたは株式投資の専門家アナリストです。以下の企業を「日本政府の骨太の方針2001〜2024年（20年以上の歴史的文脈）」に照らして分析し、国策銘柄としての中長期的な将来性を評価してください。
+
+## 重要な分析視点（20年の政策史から）
+- 政策継続性: 長期間にわたって重要テーマとされてきたか（継続年数・累積優先度）
+- 政策モメンタム: 近年加速しているか（2022〜2024年の優先度上昇幅）
+- 予算規模: 国家予算・民間投資の動員規模（GX経済移行債20兆円、防衛費倍増等）
+- 市場規模の裏付け: 政策が実需・市場成長と合致しているか
 
 ## 分析対象企業
 - ティッカー: ${ticker}
@@ -25,7 +37,7 @@ export async function POST(request: NextRequest) {
 - 時価総額: ${marketCap ? (Number(marketCap) / 1e9).toFixed(0) + '億円' : '不明'}
 - 事業内容: ${description ? String(description).substring(0, 500) : '不明'}
 
-## 骨太の方針 主要テーマ
+## 骨太の方針 テーマ別 政策継続性データ（2001〜2024年）
 ${themesOverview}
 
 ## 出力形式（必ずJSON形式のみを出力。前後に説明文を入れないこと）
