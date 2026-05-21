@@ -14,8 +14,11 @@ import {
   BarChart3,
   RefreshCw,
   ExternalLink,
+  Users,
+  Building2,
+  Target,
 } from 'lucide-react'
-import { PolicyAnalysis, HistoricalPrice } from '@/lib/stock/types'
+import { PolicyAnalysis, HistoricalPrice, CompanyDetail } from '@/lib/stock/types'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface QuoteData {
@@ -290,6 +293,9 @@ export default function StockDetailPage() {
   const [analysisLoading, setAnalysisLoading] = useState(false)
   const [analysisError, setAnalysisError] = useState<string | null>(null)
 
+  const [detail, setDetail] = useState<CompanyDetail | null>(null)
+  const [detailLoading, setDetailLoading] = useState(false)
+
   // Fetch quote
   useEffect(() => {
     async function fetchQuote() {
@@ -328,6 +334,23 @@ export default function StockDetailPage() {
     fetchHistory(period)
   }, [ticker, period, fetchHistory])
 
+  // Fetch company detail (shareholder, 5-year performance)
+  useEffect(() => {
+    async function fetchDetail() {
+      setDetailLoading(true)
+      try {
+        const res = await fetch(`/api/stock/company-detail?ticker=${encodeURIComponent(ticker)}`)
+        if (res.ok) {
+          const data = await res.json()
+          if (!data.error) setDetail(data)
+        }
+      } catch { /* ignore */ } finally {
+        setDetailLoading(false)
+      }
+    }
+    fetchDetail()
+  }, [ticker])
+
   // Analyze
   async function handleAnalyze() {
     if (!quote) return
@@ -335,6 +358,12 @@ export default function StockDetailPage() {
     setAnalysisError(null)
     setAnalysis(null)
     try {
+      // Build 5-year revenue trend string for AI context
+      const revTrend = detail?.fiveYearPerformance
+        .filter(p => p.revenue != null)
+        .map(p => `${p.date}: ${p.revenue! >= 1e9 ? (p.revenue! / 1e9).toFixed(0) + '十億' : (p.revenue! / 1e8).toFixed(0) + '億'}円`)
+        .join(' → ') || null
+
       const res = await fetch('/api/stock/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -348,6 +377,10 @@ export default function StockDetailPage() {
           pbr: quote.pbr,
           roe: quote.roe,
           marketCap: quote.marketCap,
+          employees: detail?.companyProfile.employees,
+          revenueGrowth: detail?.additionalMetrics.revenueGrowth,
+          operatingMargins: detail?.additionalMetrics.operatingMargins,
+          fiveYearRevenueTrend: revTrend,
         }),
       })
       if (!res.ok) throw new Error('分析に失敗しました')
@@ -535,6 +568,189 @@ export default function StockDetailPage() {
               </div>
             )}
 
+            {/* Shareholder composition */}
+            {detailLoading ? (
+              <div className="glass rounded-2xl p-5 flex items-center gap-3">
+                <Loader2 className="w-5 h-5 text-blue-400 animate-spin shrink-0" />
+                <span className="text-slate-400 text-sm">株主・業績データを取得中...</span>
+              </div>
+            ) : detail && (
+              <>
+                <div className="glass rounded-2xl p-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Users className="w-5 h-5 text-cyan-400" />
+                    <h2 className="text-white font-bold">株主構成</h2>
+                    {detail.companyProfile.employees && (
+                      <span className="text-slate-500 text-xs ml-auto">
+                        従業員数: {detail.companyProfile.employees.toLocaleString('ja-JP')}人
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Ownership breakdown */}
+                  <div className="grid grid-cols-3 gap-3 mb-4">
+                    <div className="glass-strong rounded-xl p-3 text-center">
+                      <p className="text-slate-500 text-xs mb-1">内部者持株</p>
+                      <p className="text-white font-bold text-lg">
+                        {detail.shareholderComposition.insidersPercent != null
+                          ? `${detail.shareholderComposition.insidersPercent}%`
+                          : '—'}
+                      </p>
+                    </div>
+                    <div className="glass-strong rounded-xl p-3 text-center">
+                      <p className="text-slate-500 text-xs mb-1">機関投資家</p>
+                      <p className="text-white font-bold text-lg">
+                        {detail.shareholderComposition.institutionsPercent != null
+                          ? `${detail.shareholderComposition.institutionsPercent}%`
+                          : '—'}
+                      </p>
+                    </div>
+                    <div className="glass-strong rounded-xl p-3 text-center">
+                      <p className="text-slate-500 text-xs mb-1">浮動株</p>
+                      <p className="text-white font-bold text-lg">
+                        {detail.shareholderComposition.floatPercent != null
+                          ? `${detail.shareholderComposition.floatPercent}%`
+                          : '—'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Visual bar */}
+                  {detail.shareholderComposition.insidersPercent != null && detail.shareholderComposition.institutionsPercent != null && (
+                    <div className="h-3 rounded-full overflow-hidden flex mb-3">
+                      <div
+                        className="bg-blue-500 h-full"
+                        style={{ width: `${detail.shareholderComposition.insidersPercent}%` }}
+                        title={`内部者 ${detail.shareholderComposition.insidersPercent}%`}
+                      />
+                      <div
+                        className="bg-purple-500 h-full"
+                        style={{ width: `${detail.shareholderComposition.institutionsPercent}%` }}
+                        title={`機関投資家 ${detail.shareholderComposition.institutionsPercent}%`}
+                      />
+                      <div className="bg-slate-600 h-full flex-1" title="その他" />
+                    </div>
+                  )}
+                  <div className="flex gap-4 text-xs text-slate-500 mb-4">
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />内部者</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-purple-500 inline-block" />機関投資家</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-600 inline-block" />その他</span>
+                  </div>
+
+                  {/* Top institutions */}
+                  {detail.shareholderComposition.topInstitutions.length > 0 && (
+                    <div>
+                      <p className="text-slate-500 text-xs font-medium mb-2">主要機関投資家</p>
+                      <div className="space-y-1.5">
+                        {detail.shareholderComposition.topInstitutions.map((inst, i) => (
+                          <div key={i} className="flex items-center gap-3">
+                            <span className="text-slate-400 text-xs font-mono w-4 shrink-0">{i + 1}</span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-2 mb-0.5">
+                                <span className="text-slate-200 text-xs truncate">{inst.name}</span>
+                                <span className="text-cyan-400 text-xs font-bold shrink-0">{inst.percent}%</span>
+                              </div>
+                              <div className="h-1 rounded-full bg-white/5 overflow-hidden">
+                                <div
+                                  className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-500"
+                                  style={{ width: `${Math.min(inst.percent * 5, 100)}%` }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 5-year performance */}
+                {detail.fiveYearPerformance.length > 0 && (
+                  <div className="glass rounded-2xl p-5">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Building2 className="w-5 h-5 text-green-400" />
+                      <h2 className="text-white font-bold">過去5年の業績</h2>
+                      {detail.additionalMetrics.operatingMargins != null && (
+                        <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-green-500/15 border border-green-500/25 text-green-300">
+                          営業利益率 {detail.additionalMetrics.operatingMargins}%
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs min-w-[500px]">
+                        <thead>
+                          <tr className="border-b border-white/10">
+                            <th className="text-left text-slate-500 font-normal pb-2">期末</th>
+                            <th className="text-right text-slate-500 font-normal pb-2">売上高</th>
+                            <th className="text-right text-slate-500 font-normal pb-2">営業利益</th>
+                            <th className="text-right text-slate-500 font-normal pb-2">純利益</th>
+                            <th className="text-right text-slate-500 font-normal pb-2">EPS</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {detail.fiveYearPerformance.map((p, i) => {
+                            const prevRevenue = i > 0 ? detail.fiveYearPerformance[i - 1].revenue : null
+                            const revGrowth = prevRevenue && p.revenue
+                              ? ((p.revenue - prevRevenue) / Math.abs(prevRevenue)) * 100
+                              : null
+                            return (
+                              <tr key={i} className="border-b border-white/5 hover:bg-white/3 transition-colors">
+                                <td className="py-2 text-slate-300">{p.date}</td>
+                                <td className="py-2 text-right text-white font-medium">
+                                  {p.revenue != null ? fmtBig(p.revenue) : '—'}
+                                  {revGrowth != null && (
+                                    <span className={`ml-1 text-xs ${revGrowth >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                      {revGrowth >= 0 ? '▲' : '▼'}{Math.abs(revGrowth).toFixed(1)}%
+                                    </span>
+                                  )}
+                                </td>
+                                <td className={`py-2 text-right font-medium ${p.operatingIncome != null && p.operatingIncome >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                  {p.operatingIncome != null ? fmtBig(p.operatingIncome) : '—'}
+                                </td>
+                                <td className={`py-2 text-right font-medium ${p.netIncome != null && p.netIncome >= 0 ? 'text-blue-300' : 'text-red-400'}`}>
+                                  {p.netIncome != null ? fmtBig(p.netIncome) : '—'}
+                                </td>
+                                <td className="py-2 text-right text-slate-300">
+                                  {p.eps != null ? `¥${fmt(p.eps, 1)}` : '—'}
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Mini revenue bar chart */}
+                    {detail.fiveYearPerformance.some(p => p.revenue != null) && (
+                      <div className="mt-4 pt-4 border-t border-white/5">
+                        <p className="text-slate-500 text-xs mb-2">売上高推移</p>
+                        <div className="flex items-end gap-1.5 h-16">
+                          {(() => {
+                            const revenues = detail.fiveYearPerformance.map(p => p.revenue ?? 0)
+                            const maxRev = Math.max(...revenues)
+                            return detail.fiveYearPerformance.map((p, i) => {
+                              const pct = maxRev > 0 ? ((p.revenue ?? 0) / maxRev) * 100 : 0
+                              return (
+                                <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                                  <div
+                                    className="w-full rounded-t bg-gradient-to-t from-blue-600 to-blue-400 transition-all"
+                                    style={{ height: `${pct}%` }}
+                                    title={p.revenue != null ? fmtBig(p.revenue) : '—'}
+                                  />
+                                  <span className="text-slate-600 text-xs">{p.date.slice(2, 7)}</span>
+                                </div>
+                              )
+                            })
+                          })()}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+
             {/* AI Analysis section */}
             <div className="glass rounded-2xl p-5">
               <div className="flex items-center justify-between mb-5">
@@ -679,6 +895,45 @@ export default function StockDetailPage() {
                             <p className="text-slate-200 text-sm">{r}</p>
                           </div>
                         ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Management challenges */}
+                  {analysis.managementChallenges && analysis.managementChallenges.length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <Target className="w-4 h-4 text-yellow-400" />
+                        <p className="text-slate-400 text-xs font-medium">株価高騰のための経営課題</p>
+                      </div>
+                      <div className="space-y-3">
+                        {analysis.managementChallenges.map((ch, i) => {
+                          const priorityConfig = {
+                            high:   { label: '最重要', color: 'text-red-300',    bg: 'bg-red-500/10',    border: 'border-red-500/25' },
+                            medium: { label: '重要',   color: 'text-orange-300', bg: 'bg-orange-500/10', border: 'border-orange-500/25' },
+                            low:    { label: '中長期', color: 'text-blue-300',   bg: 'bg-blue-500/10',   border: 'border-blue-500/25' },
+                          }
+                          const cfg = priorityConfig[ch.priority] || priorityConfig.medium
+                          return (
+                            <div key={i} className={`rounded-xl p-4 border ${cfg.bg} ${cfg.border}`}>
+                              <div className="flex items-start justify-between gap-2 mb-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-white font-bold text-sm">
+                                    {i + 1}. {ch.title}
+                                  </span>
+                                </div>
+                                <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${cfg.color} ${cfg.bg} border ${cfg.border}`}>
+                                  {cfg.label}
+                                </span>
+                              </div>
+                              <p className="text-slate-300 text-xs leading-relaxed mb-2">{ch.description}</p>
+                              <div className="flex items-start gap-1.5">
+                                <TrendingUp className="w-3 h-3 text-yellow-400 shrink-0 mt-0.5" />
+                                <p className="text-yellow-300/80 text-xs">{ch.impact}</p>
+                              </div>
+                            </div>
+                          )
+                        })}
                       </div>
                     </div>
                   )}

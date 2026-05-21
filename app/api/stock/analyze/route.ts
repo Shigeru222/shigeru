@@ -8,7 +8,11 @@ const client = new Anthropic()
 
 export async function POST(request: NextRequest) {
   const body = await request.json()
-  const { ticker, companyName, sector, industry, description, per, pbr, roe, marketCap } = body
+  const {
+    ticker, companyName, sector, industry, description,
+    per, pbr, roe, marketCap,
+    employees, revenueGrowth, operatingMargins, fiveYearRevenueTrend,
+  } = body
 
   const continuity = getAllThemeContinuity()
   const continuityMap = Object.fromEntries(continuity.map(c => [c.themeId, c]))
@@ -45,7 +49,11 @@ export async function POST(request: NextRequest) {
 - PBR: ${pbr ? Number(pbr).toFixed(2) + '倍' : '不明'}
 - ROE: ${roe ? Number(roe).toFixed(1) + '%' : '不明'}
 - 時価総額: ${marketCap ? (Number(marketCap) / 1e9).toFixed(0) + '億円' : '不明'}
-- 事業内容: ${description ? String(description).substring(0, 500) : '不明'}
+- 従業員数: ${employees ? Number(employees).toLocaleString('ja-JP') + '人' : '不明'}
+- 売上高成長率: ${revenueGrowth ? Number(revenueGrowth).toFixed(1) + '%/年' : '不明'}
+- 営業利益率: ${operatingMargins ? Number(operatingMargins).toFixed(1) + '%' : '不明'}
+- 過去5年の売上トレンド: ${fiveYearRevenueTrend || '不明'}
+- 事業内容: ${description ? String(description).substring(0, 400) : '不明'}
 
 ## 骨太の方針 テーマ別 政策継続性データ（2001〜2024年）
 ${themesOverview}
@@ -66,15 +74,24 @@ ${themesOverview}
   "risks": ["<リスク1>", "<リスク2>"],
   "summary": "<100字以内の総合評価>",
   "recommendation": "<strong_buy|buy|neutral|caution|avoid>",
-  "recommendationReason": "<50字以内の推奨理由>"
+  "recommendationReason": "<50字以内の推奨理由>",
+  "managementChallenges": [
+    {
+      "title": "<課題タイトル（15字以内）>",
+      "description": "<課題の具体的内容（60字以内）>",
+      "impact": "<株価への影響（40字以内）>",
+      "priority": "<high|medium|low>"
+    }
+  ]
 }
 
-relevanceScoreが30以上のテーマのみpolicyRelevanceに含めてください。`
+- relevanceScoreが30以上のテーマのみpolicyRelevanceに含めてください。
+- managementChallengesは必ず3つ。株価を高騰させるために「今この企業が取り組むべき最重要経営課題」を具体的に記述。財務改善・事業戦略・ESG・M&A等の観点から選定。`
 
   try {
     const response = await client.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 1500,
+      max_tokens: 2000,
       messages: [{ role: 'user', content: prompt }]
     })
 
