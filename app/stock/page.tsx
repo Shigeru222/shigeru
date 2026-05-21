@@ -10,6 +10,7 @@ import {
   Loader2,
   Star,
   Calendar,
+  Filter,
 } from 'lucide-react'
 import { POLICY_THEMES } from '@/lib/stock/policies'
 import { MARKET_RESEARCH } from '@/lib/stock/market-research'
@@ -237,6 +238,26 @@ export default function StockPage() {
             骨太の方針 2024/2025 に基づく政策テーマ別銘柄を AI が分析。
             東証上場銘柄の将来性を多角的に評価します。
           </p>
+        </div>
+
+        {/* Screener banner */}
+        <div
+          className="glass rounded-xl p-4 mb-4 border border-blue-400/20 flex items-center justify-between gap-4 cursor-pointer hover:border-blue-400/40 transition-colors group"
+          onClick={() => router.push('/stock/screener')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={e => e.key === 'Enter' && router.push('/stock/screener')}
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-400/10 rounded-lg">
+              <Filter className="w-5 h-5 text-blue-400" />
+            </div>
+            <div>
+              <div className="font-bold text-white text-sm">国策銘柄スクリーナー</div>
+              <div className="text-xs text-slate-400">113銘柄を4軸スコアリング（政策直接性・継続性・財務・市場成長）で条件抽出</div>
+            </div>
+          </div>
+          <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-blue-400 transition-colors shrink-0" />
         </div>
 
         {/* 20-year policy history banner */}
